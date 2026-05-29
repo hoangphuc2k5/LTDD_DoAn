@@ -51,6 +51,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
+import java.io.IOException
 import kotlinx.coroutines.launch
 
 @Composable
@@ -85,11 +86,11 @@ fun LoginScreen(
 								context.toast("Đăng nhập Google thành công")
 								onAuthSuccess()
 							}
-							.onFailure { context.toast(it.message ?: "Đăng nhập Google thất bại") }
+							.onFailure { context.toast(it.toLoginErrorMessage("Đăng nhập Google thất bại")) }
 					}
 				}
 			} catch (exception: Exception) {
-				context.toast(exception.message ?: "Đăng nhập Google thất bại")
+				context.toast(exception.toLoginErrorMessage("Đăng nhập Google thất bại"))
 			}
 		}
 	}
@@ -187,7 +188,7 @@ fun LoginScreen(
 										context.toast("Đăng nhập thành công")
 										onAuthSuccess()
 									}
-									.onFailure { context.toast(it.message ?: "Đăng nhập thất bại") }
+									.onFailure { context.toast(it.toLoginErrorMessage("Đăng nhập thất bại")) }
 							}
 						},
 						modifier = Modifier.fillMaxWidth(),
@@ -248,4 +249,21 @@ private fun Context.buildGoogleClient(): GoogleSignInClient? {
 
 private fun Context.toast(message: String) {
 	android.widget.Toast.makeText(this, message, android.widget.Toast.LENGTH_SHORT).show()
+}
+
+private fun Throwable.toLoginErrorMessage(defaultMessage: String): String {
+	val errorText = buildString {
+		append(message.orEmpty())
+		cause?.message?.let { append(' ').append(it) }
+	}.lowercase()
+
+	return when {
+		errorText.contains("failed to connect") ||
+			errorText.contains("connection refused") ||
+			errorText.contains("unable to resolve host") ||
+			errorText.contains("connect timed out") ||
+			errorText.contains("timeout") ->
+			"Không kết nối được tới backend. Hãy kiểm tra ExpressJS đang chạy ở port 3001."
+		else -> message?.takeIf { it.isNotBlank() } ?: defaultMessage
+	}
 }
