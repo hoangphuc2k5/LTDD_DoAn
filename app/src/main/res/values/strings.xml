@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Tegram</string>
+    <string name="google_sign_in_client_id">763611321890-dvvmvt3tmk6d2eqsmlp4t9c4b5drnb65.apps.googleusercontent.com</string>
 </resources>
