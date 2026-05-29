@@ -12,7 +12,6 @@
 /captures
 .externalNativeBuild
 .cxx
-local.properties
 
-# Firebase
+# Firebase local config
 app/google-services.json
