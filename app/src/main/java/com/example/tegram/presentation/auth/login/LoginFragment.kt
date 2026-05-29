@@ -204,7 +204,10 @@ fun LoginScreen(
 							if (googleClient == null) {
 								context.toast("Thiếu cấu hình Google Sign-In")
 							} else {
-								googleLauncher.launch(googleClient.signInIntent)
+								// Clear cached Google session so users can choose account explicitly.
+								googleClient.signOut().addOnCompleteListener {
+									googleLauncher.launch(googleClient.signInIntent)
+								}
 							}
 						},
 						modifier = Modifier.fillMaxWidth(),

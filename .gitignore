@@ -1,17 +1,58 @@
-*.iml
-.gradle
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
-.DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
+# ------------------------------
+# Android / Gradle
+# ------------------------------
+.gradle/
+.kotlin/
+**/build/
+**/captures/
+**/externalNativeBuild/
+**/.cxx/
+local.properties
 
-# Firebase local config
+# Signing / keystore files
+*.jks
+*.keystore
 app/google-services.json
+
+# Android generated artifacts
+*.apk
+*.aab
+*.ap_
+*.dex
+
+# ------------------------------
+# Kotlin / Java
+# ------------------------------
+*.class
+*.log
+*.hprof
+hs_err_pid*
+
+# ------------------------------
+# IDE / Editor
+# ------------------------------
+.idea/
+*.iml
+.vscode/
+
+# ------------------------------
+# OS files
+# ------------------------------
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# ------------------------------
+# Node / ExpressJS backend
+# ------------------------------
+ExpressJS/node_modules/
+ExpressJS/.env
+ExpressJS/.env.local
+ExpressJS/.env.*.local
+ExpressJS/npm-debug.log*
+ExpressJS/yarn-debug.log*
+ExpressJS/yarn-error.log*
+ExpressJS/pnpm-debug.log*
+ExpressJS/dist/
+ExpressJS/coverage/
+

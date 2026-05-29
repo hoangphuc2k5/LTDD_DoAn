@@ -1,12 +1,10 @@
 package com.example.tegram.presentation.navigation
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -32,17 +30,6 @@ fun AppNavGraph(
 	val coroutineScope = rememberCoroutineScope()
 	val currentUser by authViewModel.currentUser.collectAsState()
 
-	LaunchedEffect(currentUser) {
-		if (currentUser != null) {
-			navController.navigate(Routes.Home) {
-				popUpTo(navController.graph.findStartDestination().id) {
-					inclusive = true
-				}
-				launchSingleTop = true
-			}
-		}
-	}
-
 	NavHost(
 		navController = navController,
 		startDestination = Routes.Login
@@ -53,9 +40,7 @@ fun AppNavGraph(
 				onGoogleLogin = { fullName, email, photoUrl -> authViewModel.loginWithGoogle(fullName, email, photoUrl) },
 				onAuthSuccess = {
 					navController.navigate(Routes.Home) {
-						popUpTo(navController.graph.findStartDestination().id) {
-							inclusive = true
-						}
+						popUpTo(Routes.Login)
 						launchSingleTop = true
 					}
 				},
@@ -82,9 +67,7 @@ fun AppNavGraph(
 					coroutineScope.launch {
 						authViewModel.logout()
 						navController.navigate(Routes.Login) {
-							popUpTo(navController.graph.findStartDestination().id) {
-								inclusive = true
-							}
+							popUpTo(Routes.Home)
 							launchSingleTop = true
 						}
 					}
@@ -100,9 +83,7 @@ fun AppNavGraph(
 					coroutineScope.launch {
 						authViewModel.logout()
 						navController.navigate(Routes.Login) {
-							popUpTo(navController.graph.findStartDestination().id) {
-								inclusive = true
-							}
+							popUpTo(Routes.Home)
 							launchSingleTop = true
 						}
 					}

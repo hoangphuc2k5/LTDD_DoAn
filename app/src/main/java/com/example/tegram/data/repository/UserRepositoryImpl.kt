@@ -6,6 +6,8 @@ import com.example.tegram.data.mapper.toDomain
 import com.example.tegram.data.mapper.toEntity
 import com.example.tegram.data.mapper.toSyncRequest
 import com.example.tegram.data.remote.api.UserApiService
+import com.example.tegram.data.remote.dto.request.LoginRequest
+import com.example.tegram.data.remote.dto.request.RegisterRequest
 import com.example.tegram.domain.model.UserProfile
 import com.example.tegram.domain.repository.UserRepository
 import com.google.firebase.auth.FirebaseAuth
@@ -44,6 +46,24 @@ class UserRepositoryImpl(
 
 	override suspend fun loginWithEmail(email: String, password: String): UserProfile {
 		val normalizedEmail = email.trim().lowercase()
+		val backendProfile = runCatching {
+			userApiService.login(
+				LoginRequest(
+					email = normalizedEmail,
+					password = password.trim()
+				)
+			).user?.toDomain()
+		}.getOrNull()
+		if (backendProfile != null) {
+			val localExisting = withContext(Dispatchers.IO) { userDao.getByEmail(normalizedEmail) }
+			return persistSession(
+				backendProfile.copy(
+					passwordHash = localExisting?.passwordHash,
+					passwordSalt = localExisting?.passwordSalt
+				)
+			)
+		}
+
 		val localUser = withContext(Dispatchers.IO) { userDao.getByEmail(normalizedEmail) }
 		if (localUser != null) {
 			val passwordHash = localUser.passwordHash
@@ -88,6 +108,24 @@ class UserRepositoryImpl(
 		val normalizedEmail = email.trim().lowercase()
 		val passwordSalt = generateSalt()
 		val passwordHash = hashPassword(password.trim(), passwordSalt)
+		val backendProfile = runCatching {
+			userApiService.register(
+				RegisterRequest(
+					fullName = fullName.trim(),
+					email = normalizedEmail,
+					password = password.trim()
+				)
+			).user?.toDomain()
+		}.getOrNull()
+		if (backendProfile != null) {
+			return persistSession(
+				backendProfile.copy(
+					passwordHash = passwordHash,
+					passwordSalt = passwordSalt
+				)
+			)
+		}
+
 		val localExisting = withContext(Dispatchers.IO) { userDao.getByEmail(normalizedEmail) }
 		if (localExisting != null) {
 			error("Email đã được sử dụng")
