@@ -90,7 +90,7 @@ fun LoginScreen(
 					}
 				}
 			} catch (exception: Exception) {
-				context.toast(exception.toLoginErrorMessage("Đăng nhập Google thất bại"))
+				context.toast(exception.toGoogleSignInErrorMessage())
 			}
 		}
 	}
@@ -265,5 +265,20 @@ private fun Throwable.toLoginErrorMessage(defaultMessage: String): String {
 			errorText.contains("timeout") ->
 			"Không kết nối được tới backend. Hãy kiểm tra ExpressJS đang chạy ở port 3001."
 		else -> message?.takeIf { it.isNotBlank() } ?: defaultMessage
+	}
+}
+
+private fun Throwable.toGoogleSignInErrorMessage(): String {
+	val errorText = buildString {
+		append(message.orEmpty())
+		cause?.message?.let { append(' ').append(it) }
+	}.lowercase()
+
+	return when {
+		errorText.contains("network") ||
+			errorText.contains("connect") ||
+			errorText.contains("timeout") ->
+			"Không đăng nhập Google được vì emulator chưa có Internet. Hãy dùng Email hoặc kiểm tra mạng emulator."
+		else -> message?.takeIf { it.isNotBlank() } ?: "Đăng nhập Google thất bại"
 	}
 }

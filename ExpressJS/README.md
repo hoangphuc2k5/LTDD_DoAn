@@ -28,6 +28,41 @@ Backend mặc định chạy ở port `3001`.
 - `POST /auth/register`
 - `POST /auth/login`
 - `POST /users/sync`
+- `GET /learning/flashcards?userId=<uid>`
+- `POST /learning/flashcards`
+- `PATCH /learning/flashcards/:id`
+- `DELETE /learning/flashcards/:id?userId=<uid>`
+- `GET /learning/review?userId=<uid>`
+- `POST /learning/review`
+- `GET /learning/daily-plan?userId=<uid>`
+- `POST /learning/seed`
+
+### Learning payload examples
+
+Create flashcard:
+
+```json
+{
+  "userId": "user@example.com",
+  "term": "clarify",
+  "pronunciation": "/kler-uh-fy/",
+  "meaning": "lam ro",
+  "example": "Could you clarify this sentence?",
+  "topic": "Communication"
+}
+```
+
+Submit SRS review:
+
+```json
+{
+  "userId": "user@example.com",
+  "cardId": "mongodb-card-id",
+  "rating": "Good"
+}
+```
+
+`rating` accepts `Again`, `Hard`, `Good`, or `Easy`. The backend updates `repetitions`, `intervalDays`, `easeFactor`, `dueAt`, and `lastReviewedAt` using SM-2.
 
 ## Ghi chú
 
