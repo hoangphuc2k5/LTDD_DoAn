@@ -39,6 +39,10 @@ import com.example.tegram.domain.model.learning.ReviewRating
 import com.example.tegram.domain.model.learning.ReviewSchedule
 import com.example.tegram.domain.model.learning.todayEpochDay
 
+import com.example.tegram.presentation.common.components.TegramBackground
+import com.example.tegram.presentation.common.components.TegramButton
+import com.example.tegram.presentation.common.components.TegramCard
+
 @Composable
 fun SrsReviewScreen(
 	cards: List<Flashcard>,
@@ -65,21 +69,10 @@ fun SrsReviewScreen(
 	val totalSessionCards = initialDueIds.size
 	val progress = if (totalSessionCards == 0) 1f else reviewedCount.toFloat() / totalSessionCards
 
-	Column(
-		modifier = modifier
-			.fillMaxSize()
-			.background(
-				Brush.verticalGradient(
-					listOf(Color(0xFF0B1020), Color(0xFF17445C), Color(0xFFF4F7F2))
-				)
-			)
-			.padding(20.dp)
-	) {
+	TegramBackground(modifier = modifier) {
 		Spacer(modifier = Modifier.height(20.dp))
 		Row(verticalAlignment = Alignment.CenterVertically) {
-			OutlinedButton(onClick = onBack) {
-				Text("Trở lại")
-			}
+			TegramButton(text = "Trở lại", onClick = onBack, isOutlined = true, modifier = Modifier.width(100.dp))
 			Spacer(modifier = Modifier.width(12.dp))
 			Column(modifier = Modifier.weight(1f)) {
 				Text(
@@ -150,14 +143,8 @@ private fun ReviewCard(
 	onReveal: () -> Unit,
 	onRate: (ReviewRating) -> Unit
 ) {
-	Card(
-		modifier = Modifier.fillMaxWidth(),
-		shape = RoundedCornerShape(24.dp),
-		colors = CardDefaults.cardColors(containerColor = Color.White),
-		elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
-	) {
+	TegramCard(isDark = false) {
 		Column(
-			modifier = Modifier.padding(22.dp),
 			horizontalAlignment = Alignment.CenterHorizontally
 		) {
 			Text(
@@ -193,9 +180,7 @@ private fun ReviewCard(
 				Spacer(modifier = Modifier.height(22.dp))
 				RatingButtons(onRate = onRate)
 			} else {
-				Button(onClick = onReveal, modifier = Modifier.fillMaxWidth()) {
-					Text("Hiện đáp án")
-				}
+				TegramButton(text = "Hiện đáp án", onClick = onReveal)
 			}
 		}
 	}

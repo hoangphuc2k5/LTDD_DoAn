@@ -11,6 +11,7 @@ import com.example.tegram.data.local.database.TegramDatabase
 import com.example.tegram.data.local.datastore.UserPreferencesDataStore
 import com.example.tegram.data.remote.api.LearningApiService
 import com.example.tegram.data.remote.api.UserApiService
+import com.example.tegram.data.remote.interceptor.AuthInterceptor
 import com.example.tegram.data.repository.LearningRepositoryImpl
 import com.example.tegram.data.repository.UserRepositoryImpl
 import com.example.tegram.domain.repository.LearningRepository
@@ -71,7 +72,10 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideOkHttpClient(): OkHttpClient = OkHttpClient.Builder().build()
+    fun provideOkHttpClient(authInterceptor: AuthInterceptor): OkHttpClient = 
+        OkHttpClient.Builder()
+            .addInterceptor(authInterceptor)
+            .build()
 
     @Provides
     @Singleton
