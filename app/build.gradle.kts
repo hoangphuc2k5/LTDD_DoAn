@@ -49,6 +49,8 @@ dependencies {
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
+    implementation(libs.androidx.compose.material.icons.extended)
+    implementation("androidx.compose.material:material-icons-extended")
     implementation(libs.androidx.activity.compose)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
@@ -93,6 +95,12 @@ dependencies {
 
     // ── Jetpack Navigation Component (Compose) ──
     implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.navigation.fragment.ktx)
+    implementation("androidx.navigation:navigation-fragment-ktx:2.8.5")
+
+    // ── AndroidX Fragment
+    implementation(libs.androidx.fragment.ktx)
+    implementation("androidx.fragment:fragment-ktx:1.6.2")
 
     // ── DataStore Preferences ──
     implementation(libs.androidx.datastore.preferences)

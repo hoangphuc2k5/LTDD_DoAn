@@ -3,6 +3,9 @@ const cors = require('cors');
 const morgan = require('morgan');
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
+const vocabularyRoutes = require('./routes/vocabularyRoutes');
+const publicVocabularyRoutes = require('./routes/publicVocabularyRoutes');
+const dictionaryRoutes = require('./routes/dictionaryRoutes');
 const { notFound, errorHandler } = require('./middleware/errorHandler');
 
 const app = express();
@@ -20,6 +23,9 @@ app.get('/health', (req, res) => {
 
 app.use('/auth', authRoutes);
 app.use('/users', userRoutes);
+app.use('/api/vocabulary', vocabularyRoutes);
+app.use('/api/public-vocabulary', publicVocabularyRoutes);
+app.use('/api/dictionary', dictionaryRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

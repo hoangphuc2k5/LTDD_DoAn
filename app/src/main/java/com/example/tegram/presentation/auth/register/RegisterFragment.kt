@@ -175,7 +175,7 @@ fun RegisterScreen(
 										context.toast("Đăng ký thành công")
 										onNavigateLogin()
 									}
-									.onFailure { context.toast(it.message ?: "Đăng ký thất bại") }
+									.onFailure { context.toast(it.toRegisterErrorMessage("Đăng ký thất bại")) }
 							}
 						},
 						modifier = Modifier.fillMaxWidth(),
@@ -206,4 +206,35 @@ fun RegisterScreen(
 
 private fun Context.toast(message: String) {
 	android.widget.Toast.makeText(this, message, android.widget.Toast.LENGTH_SHORT).show()
+}
+
+private fun Throwable.toRegisterErrorMessage(defaultMessage: String): String {
+	if (this is retrofit2.HttpException) {
+		try {
+			val errorJsonString = this.response()?.errorBody()?.string()
+			if (errorJsonString != null) {
+				val jsonObject = org.json.JSONObject(errorJsonString)
+				if (jsonObject.has("message")) {
+					return jsonObject.getString("message")
+				}
+			}
+		} catch (e: Exception) {
+			// ignore and fallback
+		}
+	}
+
+	val errorText = buildString {
+		append(message.orEmpty())
+		cause?.message?.let { append(' ').append(it) }
+	}.lowercase()
+
+	return when {
+		errorText.contains("failed to connect") ||
+			errorText.contains("connection refused") ||
+			errorText.contains("unable to resolve host") ||
+			errorText.contains("connect timed out") ||
+			errorText.contains("timeout") ->
+			"Không kết nối được tới backend. Hãy kiểm tra ExpressJS đang chạy ở port 3001."
+		else -> message?.takeIf { it.isNotBlank() } ?: defaultMessage
+	}
 }

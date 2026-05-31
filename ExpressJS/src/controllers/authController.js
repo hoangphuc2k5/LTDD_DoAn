@@ -25,6 +25,7 @@ function buildToken(user, jwtSecret) {
 
   return jwt.sign(
     {
+      id: user._id,
       uid: user.uid || user.email,
       email: user.email,
     },

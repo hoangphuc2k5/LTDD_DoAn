@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -35,6 +36,7 @@ import com.example.tegram.domain.model.UserProfile
 fun HomeScreen(
 	user: UserProfile?,
 	onOpenProfile: () -> Unit,
+	onOpenVocabulary: () -> Unit,
 	onLogout: () -> Unit,
 	modifier: Modifier = Modifier
 ) {
@@ -88,29 +90,46 @@ fun HomeScreen(
 		Spacer(modifier = Modifier.height(16.dp))
 
 		Card(
-			modifier = Modifier.fillMaxWidth(),
+			modifier = Modifier.fillMaxWidth().clickable { onOpenVocabulary() },
 			shape = RoundedCornerShape(24.dp),
 			colors = CardDefaults.cardColors(containerColor = Color(0xFF0F172A).copy(alpha = 0.9f))
 		) {
 			Column(modifier = Modifier.padding(20.dp)) {
-				Text("Nền tảng học từ vựng", color = Color.White, fontWeight = FontWeight.Bold)
+				Text("📚 Nền tảng học từ vựng", color = Color.White, fontWeight = FontWeight.Bold,
+					style = MaterialTheme.typography.titleMedium)
 				Spacer(modifier = Modifier.height(8.dp))
 				Text(
-					text = "Sẵn sàng cho việc luyện tập, đồng bộ dữ liệu và mở rộng sau này với MongoDB.",
+					text = "Nhấn vào đây để mở Vocabulary — quản lý từ vựng cá nhân, tìm kiếm từ online, lưu từ mới.",
 					color = Color(0xFFDCE9F5)
 				)
+				Spacer(modifier = Modifier.height(12.dp))
+				Button(
+					onClick = onOpenVocabulary,
+					modifier = Modifier.fillMaxWidth(),
+					shape = RoundedCornerShape(12.dp),
+					colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+						containerColor = Color(0xFF2B8CC4)
+					)
+				) {
+					Text("📖 Mở Vocabulary", color = Color.White, fontWeight = FontWeight.Bold)
+				}
 			}
 		}
 
 		Spacer(modifier = Modifier.height(16.dp))
 
-		Button(onClick = onOpenProfile, modifier = Modifier.fillMaxWidth()) {
+		Button(onClick = onOpenProfile, modifier = Modifier.fillMaxWidth(),
+			shape = RoundedCornerShape(12.dp)) {
 			Text("Xem hồ sơ")
 		}
 
 		Spacer(modifier = Modifier.height(10.dp))
 
-		Button(onClick = onLogout, modifier = Modifier.fillMaxWidth()) {
+		Button(onClick = onLogout, modifier = Modifier.fillMaxWidth(),
+			shape = RoundedCornerShape(12.dp),
+			colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+				containerColor = Color(0xFF475569)
+			)) {
 			Text("Đăng xuất")
 		}
 	}

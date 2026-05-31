@@ -9,8 +9,11 @@ import com.example.tegram.data.local.dao.UserDao
 import com.example.tegram.data.local.database.TegramDatabase
 import com.example.tegram.data.local.datastore.UserPreferencesDataStore
 import com.example.tegram.data.remote.api.UserApiService
+import com.example.tegram.data.remote.api.VocabularyApiService
 import com.example.tegram.data.repository.UserRepositoryImpl
+import com.example.tegram.data.repository.VocabularyRepositoryImpl
 import com.example.tegram.domain.repository.UserRepository
+import com.example.tegram.domain.repository.VocabularyRepository
 import com.google.firebase.auth.FirebaseAuth
 import dagger.Module
 import dagger.Provides
@@ -68,7 +71,10 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideOkHttpClient(): OkHttpClient = OkHttpClient.Builder().build()
+    fun provideOkHttpClient(userPreferencesDataStore: UserPreferencesDataStore): OkHttpClient = 
+        OkHttpClient.Builder()
+            .addInterceptor(TokenInterceptor(userPreferencesDataStore))
+            .build()
 
     @Provides
     @Singleton
@@ -86,6 +92,11 @@ object AppModule {
 
     @Provides
     @Singleton
+    fun provideVocabularyApiService(retrofit: Retrofit): com.example.tegram.data.remote.api.VocabularyApiService =
+        retrofit.create(com.example.tegram.data.remote.api.VocabularyApiService::class.java)
+
+    @Provides
+    @Singleton
     fun provideUserRepository(
         firebaseAuth: FirebaseAuth?,
         userDao: UserDao,
@@ -97,6 +108,12 @@ object AppModule {
         userPreferencesDataStore = userPreferencesDataStore,
         userApiService = userApiService
     )
+
+    @Provides
+    @Singleton
+    fun provideVocabularyRepository(
+        apiService: VocabularyApiService
+    ): VocabularyRepository = VocabularyRepositoryImpl(apiService)
 }
 
 private val Context.userPreferencesDataStore by preferencesDataStore(name = "tegram_user_preferences")

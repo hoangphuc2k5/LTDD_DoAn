@@ -47,7 +47,7 @@ class UserRepositoryImpl(
 			error(response.message ?: "Đăng nhập thất bại từ backend")
 		}
 
-		return persistSession(response.user.toDomain())
+		return persistSession(response.user.toDomain(), response.token)
 	}
 
 	override suspend fun registerWithEmail(fullName: String, email: String, password: String): UserProfile {
@@ -63,7 +63,7 @@ class UserRepositoryImpl(
 			error(response.message ?: "Đăng ký thất bại từ backend")
 		}
 
-		return persistSession(response.user.toDomain())
+		return persistSession(response.user.toDomain(), response.token)
 	}
 
 	override suspend fun loginWithGoogle(fullName: String?, email: String, photoUrl: String?): UserProfile {
@@ -83,7 +83,7 @@ class UserRepositoryImpl(
 			error(response.message ?: "Đăng nhập Google thất bại từ backend")
 		}
 
-		return persistSession(response.user.toDomain())
+		return persistSession(response.user.toDomain(), response.token)
 	}
 
 	override suspend fun logout() {
@@ -91,10 +91,13 @@ class UserRepositoryImpl(
 		userPreferencesDataStore.clearCurrentUser()
 	}
 
-	private suspend fun persistSession(profile: UserProfile): UserProfile {
+	private suspend fun persistSession(profile: UserProfile, token: String?): UserProfile {
 		withContext(Dispatchers.IO) {
 			userDao.upsert(profile.toEntity())
 			userPreferencesDataStore.saveCurrentUser(profile)
+			if (!token.isNullOrBlank()) {
+				userPreferencesDataStore.saveAuthToken(token)
+			}
 		}
 		return profile
 	}

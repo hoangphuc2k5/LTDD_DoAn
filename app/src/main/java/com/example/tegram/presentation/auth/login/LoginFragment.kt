@@ -252,6 +252,20 @@ private fun Context.toast(message: String) {
 }
 
 private fun Throwable.toLoginErrorMessage(defaultMessage: String): String {
+	if (this is retrofit2.HttpException) {
+		try {
+			val errorJsonString = this.response()?.errorBody()?.string()
+			if (errorJsonString != null) {
+				val jsonObject = org.json.JSONObject(errorJsonString)
+				if (jsonObject.has("message")) {
+					return jsonObject.getString("message")
+				}
+			}
+		} catch (e: Exception) {
+			// ignore and fallback
+		}
+	}
+
 	val errorText = buildString {
 		append(message.orEmpty())
 		cause?.message?.let { append(' ').append(it) }

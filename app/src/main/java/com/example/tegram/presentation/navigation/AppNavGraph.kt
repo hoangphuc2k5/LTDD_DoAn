@@ -13,13 +13,18 @@ import com.example.tegram.presentation.auth.login.LoginScreen
 import com.example.tegram.presentation.auth.register.RegisterScreen
 import com.example.tegram.presentation.home.HomeScreen
 import com.example.tegram.presentation.profile.ProfileScreen
+import com.example.tegram.presentation.vocabulary.VocabularyHomeScreen
+import com.example.tegram.presentation.vocabulary.importexport.ImportExportRoute
 import kotlinx.coroutines.launch
+import androidx.compose.runtime.LaunchedEffect
 
 private object Routes {
 	const val Login = "login"
 	const val Register = "register"
 	const val Home = "home"
+	const val Vocabulary = "vocabulary"
 	const val Profile = "profile"
+	const val ImportExport = "import_export"
 }
 
 @Composable
@@ -63,6 +68,7 @@ fun AppNavGraph(
 			HomeScreen(
 				user = currentUser,
 				onOpenProfile = { navController.navigate(Routes.Profile) },
+				onOpenVocabulary = { navController.navigate(Routes.Vocabulary) },
 				onLogout = {
 					coroutineScope.launch {
 						authViewModel.logout()
@@ -72,6 +78,29 @@ fun AppNavGraph(
 						}
 					}
 				}
+			)
+		}
+
+		composable(Routes.Vocabulary) {
+			if (currentUser == null) {
+				LaunchedEffect(Unit) {
+					navController.navigate(Routes.Login) {
+						popUpTo(Routes.Login)
+						launchSingleTop = true
+					}
+				}
+			} else {
+				VocabularyHomeScreen(
+					onNavigateToAdd = {},
+					onNavigateToDetail = {},
+					onNavigateToImportExport = { navController.navigate(Routes.ImportExport) }
+				)
+			}
+		}
+
+		composable(Routes.ImportExport) {
+			ImportExportRoute(
+				onNavigateBack = { navController.popBackStack() }
 			)
 		}
 
