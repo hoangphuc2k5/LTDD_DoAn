@@ -13,6 +13,7 @@ import com.example.tegram.presentation.auth.login.LoginScreen
 import com.example.tegram.presentation.auth.register.RegisterScreen
 import com.example.tegram.presentation.home.HomeScreen
 import com.example.tegram.presentation.profile.ProfileScreen
+import com.example.tegram.presentation.statistics.StatisticsScreen
 import kotlinx.coroutines.launch
 
 private object Routes {
@@ -20,6 +21,7 @@ private object Routes {
 	const val Register = "register"
 	const val Home = "home"
 	const val Profile = "profile"
+	const val Statistics = "statistics"
 }
 
 @Composable
@@ -61,8 +63,8 @@ fun AppNavGraph(
 
 		composable(Routes.Home) {
 			HomeScreen(
-				user = currentUser,
 				onOpenProfile = { navController.navigate(Routes.Profile) },
+				onOpenStatistics = { navController.navigate(Routes.Statistics) },
 				onLogout = {
 					coroutineScope.launch {
 						authViewModel.logout()
@@ -88,6 +90,12 @@ fun AppNavGraph(
 						}
 					}
 				}
+			)
+		}
+
+		composable(Routes.Statistics) {
+			StatisticsScreen(
+				onBack = { navController.popBackStack() }
 			)
 		}
 	}

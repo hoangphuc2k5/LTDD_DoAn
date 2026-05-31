@@ -43,6 +43,26 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    streak: {
+      type: Number,
+      default: 0,
+    },
+    level: {
+      type: String,
+      default: 'A1',
+    },
+    wordsLearned: {
+      type: Number,
+      default: 0,
+    },
+    totalReviews: {
+      type: Number,
+      default: 0,
+    },
+    correctReviews: {
+      type: Number,
+      default: 0,
+    },
     syncedAt: {
       type: Number,
       default: () => Date.now(),

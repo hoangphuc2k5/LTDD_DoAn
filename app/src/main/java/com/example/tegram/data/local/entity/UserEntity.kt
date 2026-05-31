@@ -13,5 +13,10 @@ data class UserEntity(
 	val isGoogleUser: Boolean,
 	val passwordHash: String?,
 	val passwordSalt: String?,
+	val streak: Int,
+	val level: String,
+	val wordsLearned: Int,
+	val totalReviews: Int,
+	val correctReviews: Int,
 	val syncedAt: Long
 )

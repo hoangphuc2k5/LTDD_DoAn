@@ -12,12 +12,30 @@ function serializeUser(user) {
     provider: user.provider,
     photoUrl: user.photoUrl,
     isGoogleUser: user.isGoogleUser,
+    streak: user.streak || 0,
+    level: user.level || 'A1',
+    wordsLearned: user.wordsLearned || 0,
+    totalReviews: user.totalReviews || 0,
+    correctReviews: user.correctReviews || 0,
     syncedAt: user.syncedAt,
   };
 }
 
 async function syncUser(req, res) {
-  const { uid, fullName, email, provider, photoUrl, isGoogleUser, syncedAt } = req.body || {};
+  const {
+    uid,
+    fullName,
+    email,
+    provider,
+    photoUrl,
+    isGoogleUser,
+    streak,
+    level,
+    wordsLearned,
+    totalReviews,
+    correctReviews,
+    syncedAt
+  } = req.body || {};
   const normalizedEmail = normalizeEmail(email);
 
   if (!uid || !fullName || !normalizedEmail || !provider) {
@@ -38,6 +56,11 @@ async function syncUser(req, res) {
     provider: String(provider).trim(),
     photoUrl: photoUrl || null,
     isGoogleUser: Boolean(isGoogleUser),
+    streak: typeof streak === 'number' ? streak : 0,
+    level: level || 'A1',
+    wordsLearned: typeof wordsLearned === 'number' ? wordsLearned : 0,
+    totalReviews: typeof totalReviews === 'number' ? totalReviews : 0,
+    correctReviews: typeof correctReviews === 'number' ? correctReviews : 0,
     syncedAt: typeof syncedAt === 'number' ? syncedAt : Date.now(),
   });
 
@@ -47,6 +70,11 @@ async function syncUser(req, res) {
   user.provider = String(provider).trim();
   user.photoUrl = photoUrl || null;
   user.isGoogleUser = Boolean(isGoogleUser);
+  user.streak = typeof streak === 'number' ? streak : user.streak;
+  user.level = level || user.level;
+  user.wordsLearned = typeof wordsLearned === 'number' ? wordsLearned : user.wordsLearned;
+  user.totalReviews = typeof totalReviews === 'number' ? totalReviews : user.totalReviews;
+  user.correctReviews = typeof correctReviews === 'number' ? correctReviews : user.correctReviews;
   user.syncedAt = typeof syncedAt === 'number' ? syncedAt : Date.now();
 
   await user.save();
