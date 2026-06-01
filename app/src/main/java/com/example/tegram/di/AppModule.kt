@@ -12,6 +12,11 @@ import com.example.tegram.data.local.database.TegramDatabase
 import com.example.tegram.data.local.datastore.UserPreferencesDataStore
 import com.example.tegram.data.remote.api.LearningApiService
 import com.example.tegram.data.remote.api.UserApiService
+import com.example.tegram.data.remote.api.VocabularyApiService
+import com.example.tegram.data.repository.UserRepositoryImpl
+import com.example.tegram.data.repository.VocabularyRepositoryImpl
+import com.example.tegram.domain.repository.UserRepository
+import com.example.tegram.domain.repository.VocabularyRepository
 import com.example.tegram.data.remote.interceptor.AuthInterceptor
 import com.example.tegram.data.repository.LearningRepositoryImpl
 import com.example.tegram.data.repository.UserRepositoryImpl
@@ -76,6 +81,9 @@ object AppModule {
 
     @Provides
     @Singleton
+    fun provideOkHttpClient(userPreferencesDataStore: UserPreferencesDataStore): OkHttpClient = 
+        OkHttpClient.Builder()
+            .addInterceptor(TokenInterceptor(userPreferencesDataStore))
     fun provideOkHttpClient(authInterceptor: AuthInterceptor): OkHttpClient = 
         OkHttpClient.Builder()
             .addInterceptor(authInterceptor)
@@ -101,6 +109,8 @@ object AppModule {
 
     @Provides
     @Singleton
+    fun provideVocabularyApiService(retrofit: Retrofit): com.example.tegram.data.remote.api.VocabularyApiService =
+        retrofit.create(com.example.tegram.data.remote.api.VocabularyApiService::class.java)
     fun provideLearningApiService(retrofit: Retrofit): LearningApiService =
         retrofit.create(LearningApiService::class.java)
 
@@ -124,6 +134,9 @@ object AppModule {
 
     @Provides
     @Singleton
+    fun provideVocabularyRepository(
+        apiService: VocabularyApiService
+    ): VocabularyRepository = VocabularyRepositoryImpl(apiService)
     fun provideLearningRepository(
         learningApiService: LearningApiService,
         getDailyPlanUseCase: GetDailyPlanUseCase

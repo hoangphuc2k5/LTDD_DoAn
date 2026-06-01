@@ -18,14 +18,19 @@ import com.example.tegram.presentation.learning.dailyplan.DailyPlanScreen
 import com.example.tegram.presentation.learning.flashcard.FlashcardScreen
 import com.example.tegram.presentation.learning.review.SrsReviewScreen
 import com.example.tegram.presentation.profile.ProfileScreen
+import com.example.tegram.presentation.vocabulary.VocabularyHomeScreen
+import com.example.tegram.presentation.vocabulary.importexport.ImportExportRoute
 import com.example.tegram.presentation.statistics.StatisticsScreen
 import kotlinx.coroutines.launch
+import androidx.compose.runtime.LaunchedEffect
 
 private object Routes {
 	const val Login = "login"
 	const val Register = "register"
 	const val Home = "home"
+	const val Vocabulary = "vocabulary"
 	const val Profile = "profile"
+	const val ImportExport = "import_export"
 	const val Statistics = "statistics"
 	const val Main = "main"
 	const val Flashcards = "flashcards"
@@ -79,6 +84,7 @@ fun AppNavGraph(
 		composable(Routes.Home) {
 			HomeScreen(
 				onOpenProfile = { navController.navigate(Routes.Profile) },
+				onOpenVocabulary = { navController.navigate(Routes.Vocabulary) },
 				onOpenStatistics = { navController.navigate(Routes.Statistics) },
 		composable(Routes.Main) {
 			MainScreen(
@@ -98,6 +104,32 @@ fun AppNavGraph(
 			)
 		}
 
+		composable(Routes.Vocabulary) {
+			if (currentUser == null) {
+				LaunchedEffect(Unit) {
+					navController.navigate(Routes.Login) {
+						popUpTo(Routes.Login)
+						launchSingleTop = true
+					}
+				}
+			} else {
+				VocabularyHomeScreen(
+					onNavigateToAdd = {},
+					onNavigateToDetail = {},
+					onNavigateToImportExport = { navController.navigate(Routes.ImportExport) }
+				)
+			}
+		}
+
+		composable(Routes.ImportExport) {
+			ImportExportRoute(
+				onNavigateBack = { navController.popBackStack() }
+			)
+		}
+
+		composable(Routes.Profile) {
+			ProfileScreen(
+				user = currentUser,
 		composable(Routes.Flashcards) {
 			FlashcardScreen(
 				cards = learningState.cards,

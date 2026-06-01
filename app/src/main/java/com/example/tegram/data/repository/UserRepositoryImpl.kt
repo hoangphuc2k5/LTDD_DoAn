@@ -109,6 +109,13 @@ class UserRepositoryImpl(
 		userPreferencesDataStore.clearCurrentUser()
 	}
 
+	private suspend fun persistSession(profile: UserProfile, token: String?): UserProfile {
+		withContext(Dispatchers.IO) {
+			userDao.upsert(profile.toEntity())
+			userPreferencesDataStore.saveCurrentUser(profile)
+			if (!token.isNullOrBlank()) {
+				userPreferencesDataStore.saveAuthToken(token)
+			}
 	override suspend fun updateUserProgress(
 		streak: Int,
 		level: String,

@@ -18,6 +18,7 @@ class UserPreferencesDataStore(
 		val CURRENT_USER_NAME = stringPreferencesKey("current_user_name")
 		val CURRENT_USER_PROVIDER = stringPreferencesKey("current_user_provider")
 		val IS_LOGGED_IN = booleanPreferencesKey("is_logged_in")
+		val AUTH_TOKEN = stringPreferencesKey("auth_token")
 		val REMINDER_TIME = stringPreferencesKey("reminder_time")
 		val AUTH_TOKEN = stringPreferencesKey("auth_token")
 	}
@@ -46,6 +47,10 @@ class UserPreferencesDataStore(
 		preferences[CURRENT_USER_ID]
 	}
 
+	val authTokenFlow: Flow<String?> = dataStore.data.map { preferences ->
+		preferences[AUTH_TOKEN]
+	}
+
 	suspend fun saveCurrentUser(user: UserProfile) {
 		dataStore.edit { preferences ->
 			preferences[CURRENT_USER_ID] = user.uid
@@ -53,6 +58,12 @@ class UserPreferencesDataStore(
 			preferences[CURRENT_USER_NAME] = user.fullName
 			preferences[CURRENT_USER_PROVIDER] = user.provider
 			preferences[IS_LOGGED_IN] = true
+		}
+	}
+
+	suspend fun saveAuthToken(token: String) {
+		dataStore.edit { preferences ->
+			preferences[AUTH_TOKEN] = token
 		}
 	}
 

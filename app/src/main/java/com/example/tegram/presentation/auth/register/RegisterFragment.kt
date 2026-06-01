@@ -120,6 +120,26 @@ fun RegisterScreen(
 					onDarkBackground = false
 				)
 
+					Button(
+						onClick = {
+							if (password != confirmPassword) {
+								context.toast("Mật khẩu xác nhận không khớp")
+								return@Button
+							}
+							scope.launch {
+								runCatching { onRegister(fullName, email, password) }
+									.onSuccess {
+										context.toast("Đăng ký thành công")
+										onNavigateLogin()
+									}
+									.onFailure { context.toast(it.toRegisterErrorMessage("Đăng ký thất bại")) }
+							}
+						},
+						modifier = Modifier.fillMaxWidth(),
+						contentPadding = PaddingValues(vertical = 14.dp),
+						shape = RoundedCornerShape(16.dp)
+					) {
+						Text("Tạo tài khoản")
 				Spacer(modifier = Modifier.height(16.dp))
 
 				TegramTextField(
@@ -189,4 +209,35 @@ fun RegisterScreen(
 
 private fun Context.toast(message: String) {
 	android.widget.Toast.makeText(this, message, android.widget.Toast.LENGTH_SHORT).show()
+}
+
+private fun Throwable.toRegisterErrorMessage(defaultMessage: String): String {
+	if (this is retrofit2.HttpException) {
+		try {
+			val errorJsonString = this.response()?.errorBody()?.string()
+			if (errorJsonString != null) {
+				val jsonObject = org.json.JSONObject(errorJsonString)
+				if (jsonObject.has("message")) {
+					return jsonObject.getString("message")
+				}
+			}
+		} catch (e: Exception) {
+			// ignore and fallback
+		}
+	}
+
+	val errorText = buildString {
+		append(message.orEmpty())
+		cause?.message?.let { append(' ').append(it) }
+	}.lowercase()
+
+	return when {
+		errorText.contains("failed to connect") ||
+			errorText.contains("connection refused") ||
+			errorText.contains("unable to resolve host") ||
+			errorText.contains("connect timed out") ||
+			errorText.contains("timeout") ->
+			"Không kết nối được tới backend. Hãy kiểm tra ExpressJS đang chạy ở port 3001."
+		else -> message?.takeIf { it.isNotBlank() } ?: defaultMessage
+	}
 }
