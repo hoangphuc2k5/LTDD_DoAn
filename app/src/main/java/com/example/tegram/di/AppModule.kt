@@ -5,12 +5,17 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.room.Room
+import com.example.tegram.R
 import com.example.tegram.data.local.dao.UserDao
 import com.example.tegram.data.local.database.TegramDatabase
 import com.example.tegram.data.local.datastore.UserPreferencesDataStore
+import com.example.tegram.data.remote.api.LearningApiService
 import com.example.tegram.data.remote.api.UserApiService
+import com.example.tegram.data.repository.LearningRepositoryImpl
 import com.example.tegram.data.repository.UserRepositoryImpl
+import com.example.tegram.domain.repository.LearningRepository
 import com.example.tegram.domain.repository.UserRepository
+import com.example.tegram.domain.usecase.learning.GetDailyPlanUseCase
 import com.google.firebase.auth.FirebaseAuth
 import dagger.Module
 import dagger.Provides
@@ -31,8 +36,6 @@ import retrofit2.converter.moshi.MoshiConverterFactory
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
-
-    private const val BASE_URL = "http://10.0.2.2:3001/"
 
     @Provides
     @Singleton
@@ -72,9 +75,13 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideRetrofit(moshi: Moshi, okHttpClient: OkHttpClient): Retrofit =
+    fun provideRetrofit(
+        @ApplicationContext context: Context,
+        moshi: Moshi,
+        okHttpClient: OkHttpClient
+    ): Retrofit =
         Retrofit.Builder()
-            .baseUrl(BASE_URL)
+            .baseUrl(context.getString(R.string.api_base_url))
             .client(okHttpClient)
             .addConverterFactory(MoshiConverterFactory.create(moshi))
             .build()
@@ -83,6 +90,15 @@ object AppModule {
     @Singleton
     fun provideUserApiService(retrofit: Retrofit): UserApiService =
         retrofit.create(UserApiService::class.java)
+
+    @Provides
+    @Singleton
+    fun provideLearningApiService(retrofit: Retrofit): LearningApiService =
+        retrofit.create(LearningApiService::class.java)
+
+    @Provides
+    @Singleton
+    fun provideGetDailyPlanUseCase(): GetDailyPlanUseCase = GetDailyPlanUseCase()
 
     @Provides
     @Singleton
@@ -96,6 +112,16 @@ object AppModule {
         userDao = userDao,
         userPreferencesDataStore = userPreferencesDataStore,
         userApiService = userApiService
+    )
+
+    @Provides
+    @Singleton
+    fun provideLearningRepository(
+        learningApiService: LearningApiService,
+        getDailyPlanUseCase: GetDailyPlanUseCase
+    ): LearningRepository = LearningRepositoryImpl(
+        learningApiService = learningApiService,
+        dailyPlanUseCase = getDailyPlanUseCase
     )
 }
 
