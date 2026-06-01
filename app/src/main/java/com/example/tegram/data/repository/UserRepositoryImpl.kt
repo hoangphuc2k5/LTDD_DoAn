@@ -8,6 +8,7 @@ import com.example.tegram.data.mapper.toSyncRequest
 import com.example.tegram.data.remote.api.UserApiService
 import com.example.tegram.data.remote.dto.request.LoginRequest
 import com.example.tegram.data.remote.dto.request.RegisterRequest
+import com.example.tegram.data.remote.dto.request.UpdateUserRequest
 import com.example.tegram.domain.model.UserProfile
 import com.example.tegram.domain.repository.UserRepository
 import com.google.firebase.auth.FirebaseAuth
@@ -48,7 +49,7 @@ class UserRepositoryImpl(
 			error(response.message ?: "Đăng nhập thất bại từ backend")
 		}
 
-		return persistSession(response.user.toDomain())
+		return persistSession(response.user.toDomain(), response.token)
 	}
 
 	override suspend fun registerWithEmail(fullName: String, email: String, password: String): UserProfile {
@@ -64,7 +65,7 @@ class UserRepositoryImpl(
 			error(response.message ?: "Đăng ký thất bại từ backend")
 		}
 
-		return persistSession(response.user.toDomain())
+		return persistSession(response.user.toDomain(), response.token)
 	}
 
 	override suspend fun loginWithGoogle(fullName: String?, email: String, photoUrl: String?): UserProfile {
@@ -82,6 +83,22 @@ class UserRepositoryImpl(
 		val response = userApiService.syncUser(profile.toSyncRequest())
 		if (!response.success || response.user == null) {
 			error(response.message ?: "Đăng nhập Google thất bại từ backend")
+		}
+
+		return persistSession(response.user.toDomain(), response.token)
+	}
+
+	override suspend fun updateProfile(fullName: String?, photoUrl: String?): UserProfile {
+		val uid = userPreferencesDataStore.currentUserIdFlow.first()
+			?: error("User not logged in")
+
+		val response = userApiService.updateProfile(
+			uid = uid,
+			request = UpdateUserRequest(fullName = fullName, photoUrl = photoUrl)
+		)
+
+		if (!response.success || response.user == null) {
+			error(response.message ?: "Cập nhật hồ sơ thất bại")
 		}
 
 		return persistSession(response.user.toDomain())
@@ -126,9 +143,11 @@ class UserRepositoryImpl(
 	}
 
 	private suspend fun persistSession(profile: UserProfile): UserProfile {
+	private suspend fun persistSession(profile: UserProfile, token: String? = null): UserProfile {
 		withContext(Dispatchers.IO) {
 			userDao.upsert(profile.toEntity())
 			userPreferencesDataStore.saveCurrentUser(profile)
+			token?.let { userPreferencesDataStore.saveAuthToken(it) }
 		}
 		return profile
 	}

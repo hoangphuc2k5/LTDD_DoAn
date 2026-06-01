@@ -12,6 +12,8 @@ interface UserRepository {
 
 	suspend fun loginWithGoogle(fullName: String?, email: String, photoUrl: String?): UserProfile
 
+	suspend fun updateProfile(fullName: String?, photoUrl: String?): UserProfile
+
 	suspend fun logout()
 
 	suspend fun updateUserProgress(
