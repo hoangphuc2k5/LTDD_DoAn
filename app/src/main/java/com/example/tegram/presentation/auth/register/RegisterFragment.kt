@@ -43,6 +43,16 @@ import androidx.compose.ui.unit.dp
 import com.example.tegram.R
 import kotlinx.coroutines.launch
 
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Icon
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
+import com.example.tegram.presentation.common.components.TegramBackground
+import com.example.tegram.presentation.common.components.TegramButton
+import com.example.tegram.presentation.common.components.TegramCard
+import com.example.tegram.presentation.common.components.TegramTextField
+
 @Composable
 fun RegisterScreen(
 	onRegister: suspend (String, String, String) -> Unit,
@@ -57,31 +67,15 @@ fun RegisterScreen(
 	var confirmPassword by rememberSaveable { mutableStateOf("") }
 	var isPasswordVisible by rememberSaveable { mutableStateOf(false) }
 
-	Box(
-		modifier = modifier
-			.fillMaxSize()
-			.background(
-				brush = Brush.verticalGradient(
-					colors = listOf(
-						Color(0xFF081120),
-						Color(0xFF123D66),
-						Color(0xFF2B8CC4)
-					)
-				)
-			)
-			.padding(20.dp)
-	) {
+	TegramBackground(modifier = modifier) {
 		Column(
-			modifier = Modifier
-				.fillMaxSize()
-				.verticalScroll(rememberScrollState()),
-			verticalArrangement = Arrangement.Center,
+			modifier = Modifier.fillMaxWidth(),
 			horizontalAlignment = Alignment.CenterHorizontally
 		) {
 			androidx.compose.foundation.Image(
 				painter = painterResource(id = R.drawable.z7878269644177_8b565971c843444c8c970c8f12d4ade9),
 				contentDescription = "Tegram logo",
-				modifier = Modifier.size(140.dp)
+				modifier = Modifier.size(130.dp)
 			)
 
 			Spacer(modifier = Modifier.height(12.dp))
@@ -100,68 +94,31 @@ fun RegisterScreen(
 
 			Spacer(modifier = Modifier.height(24.dp))
 
-			Card(
-				modifier = Modifier.fillMaxWidth(),
-				shape = RoundedCornerShape(28.dp),
-				colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.97f)),
-				elevation = CardDefaults.cardElevation(defaultElevation = 10.dp)
-			) {
-				Column(modifier = Modifier.padding(20.dp)) {
-					Text(
-						text = "Đăng ký tài khoản",
-						style = MaterialTheme.typography.headlineSmall,
-						fontWeight = FontWeight.Bold,
-						color = Color(0xFF0F172A)
-					)
+			TegramCard(isDark = false) {
+				Text(
+					text = "Đăng ký tài khoản",
+					style = MaterialTheme.typography.headlineSmall,
+					fontWeight = FontWeight.Bold,
+					color = Color(0xFF0F172A)
+				)
 
-					Spacer(modifier = Modifier.height(16.dp))
+				Spacer(modifier = Modifier.height(24.dp))
 
-					OutlinedTextField(
-						value = fullName,
-						onValueChange = { fullName = it },
-						modifier = Modifier.fillMaxWidth(),
-						label = { Text("Họ và tên") },
-						singleLine = true
-					)
+				TegramTextField(
+					value = fullName,
+					onValueChange = { fullName = it },
+					label = "Họ và tên",
+					onDarkBackground = false
+				)
 
-					Spacer(modifier = Modifier.height(12.dp))
+				Spacer(modifier = Modifier.height(16.dp))
 
-					OutlinedTextField(
-						value = email,
-						onValueChange = { email = it },
-						modifier = Modifier.fillMaxWidth(),
-						label = { Text("Email") },
-						singleLine = true
-					)
-
-					Spacer(modifier = Modifier.height(12.dp))
-
-					OutlinedTextField(
-						value = password,
-						onValueChange = { password = it },
-						modifier = Modifier.fillMaxWidth(),
-						label = { Text("Mật khẩu") },
-						singleLine = true,
-						visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation()
-					)
-
-					Spacer(modifier = Modifier.height(12.dp))
-
-					OutlinedTextField(
-						value = confirmPassword,
-						onValueChange = { confirmPassword = it },
-						modifier = Modifier.fillMaxWidth(),
-						label = { Text("Xác nhận mật khẩu") },
-						singleLine = true,
-						visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation()
-					)
-
-					TextButton(
-						onClick = { isPasswordVisible = !isPasswordVisible },
-						modifier = Modifier.align(Alignment.End)
-					) {
-						Text(if (isPasswordVisible) "Ẩn mật khẩu" else "Hiện mật khẩu")
-					}
+				TegramTextField(
+					value = email,
+					onValueChange = { email = it },
+					label = "Email",
+					onDarkBackground = false
+				)
 
 					Button(
 						onClick = {
@@ -183,20 +140,66 @@ fun RegisterScreen(
 						shape = RoundedCornerShape(16.dp)
 					) {
 						Text("Tạo tài khoản")
-					}
+				Spacer(modifier = Modifier.height(16.dp))
 
-					Spacer(modifier = Modifier.height(12.dp))
+				TegramTextField(
+					value = password,
+					onValueChange = { password = it },
+					label = "Mật khẩu",
+					onDarkBackground = false,
+					visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation()
+				)
 
-					Row(
-						modifier = Modifier.fillMaxWidth(),
-						horizontalArrangement = Arrangement.Center,
-						verticalAlignment = Alignment.CenterVertically
-					) {
-						Text("Đã có tài khoản?", color = Color(0xFF475569))
-						Spacer(modifier = Modifier.width(4.dp))
-						TextButton(onClick = onNavigateLogin) {
-							Text("Quay lại đăng nhập")
+				Spacer(modifier = Modifier.height(16.dp))
+
+				TegramTextField(
+					value = confirmPassword,
+					onValueChange = { confirmPassword = it },
+					label = "Xác nhận mật khẩu",
+					onDarkBackground = false,
+					visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+					trailingIcon = {
+						IconButton(onClick = { isPasswordVisible = !isPasswordVisible }) {
+							Icon(
+								imageVector = if (isPasswordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+								contentDescription = if (isPasswordVisible) "Ẩn mật khẩu" else "Hiện mật khẩu",
+								tint = Color.Gray
+							)
 						}
+					}
+				)
+
+				Spacer(modifier = Modifier.height(24.dp))
+
+				TegramButton(
+					text = "Tạo tài khoản",
+					onClick = {
+						if (password != confirmPassword) {
+							context.toast("Mật khẩu xác nhận không khớp")
+							return@TegramButton
+						}
+						scope.launch {
+							runCatching { onRegister(fullName, email, password) }
+								.onSuccess {
+									context.toast("Đăng ký thành công")
+									onNavigateLogin()
+								}
+								.onFailure { context.toast(it.message ?: "Đăng ký thất bại") }
+						}
+					}
+				)
+
+				Spacer(modifier = Modifier.height(16.dp))
+
+				Row(
+					modifier = Modifier.fillMaxWidth(),
+					horizontalArrangement = Arrangement.Center,
+					verticalAlignment = Alignment.CenterVertically
+				) {
+					Text("Đã có tài khoản?", color = Color(0xFF475569))
+					Spacer(modifier = Modifier.width(4.dp))
+					TextButton(onClick = onNavigateLogin) {
+						Text("Quay lại đăng nhập")
 					}
 				}
 			}

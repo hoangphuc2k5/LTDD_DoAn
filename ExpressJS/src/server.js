@@ -4,11 +4,12 @@ const app = require('./app');
 const { connectDb } = require('./config/db');
 
 const port = process.env.PORT || 3001;
+const host = process.env.HOST || '0.0.0.0';
 
 async function start() {
   await connectDb(process.env.MONGODB_URI);
-  app.listen(port, () => {
-    console.log(`Tegram API listening on port ${port}`);
+  app.listen(port, host, () => {
+    console.log(`Tegram API listening on http://${host}:${port}`);
   });
 }
 

@@ -1,98 +1,225 @@
 package com.example.tegram.presentation.profile
 
+import android.app.TimePickerDialog
+import android.net.Uri
+import android.os.Build
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
+import coil.compose.AsyncImage
 import com.example.tegram.domain.model.UserProfile
+import com.example.tegram.presentation.common.components.*
+import com.example.tegram.service.notification.ReminderWorker
+import java.util.*
+import java.util.concurrent.TimeUnit
 
 @Composable
 fun ProfileScreen(
-	user: UserProfile?,
-	onBack: () -> Unit,
-	onLogout: () -> Unit,
-	modifier: Modifier = Modifier
+    user: UserProfile?,
+    onBack: () -> Unit,
+    onLogout: () -> Unit,
+    viewModel: ProfileViewModel = hiltViewModel(),
+    modifier: Modifier = Modifier
 ) {
-	Column(
-		modifier = modifier
-			.fillMaxSize()
-			.background(
-				brush = Brush.verticalGradient(
-					colors = listOf(Color(0xFF081120), Color(0xFF123D66), Color(0xFF2B8CC4))
-				)
-			)
-			.verticalScroll(rememberScrollState())
-			.padding(20.dp),
-		verticalArrangement = Arrangement.Top
-	) {
-		Spacer(modifier = Modifier.height(24.dp))
-		Text(
-			text = "Hồ sơ cá nhân",
-			style = MaterialTheme.typography.headlineMedium,
-			fontWeight = FontWeight.Bold,
-			color = Color.White
-		)
-		Spacer(modifier = Modifier.height(16.dp))
+    val context = LocalContext.current
+    val savedReminderTime by viewModel.reminderTime.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
+    val currentUser by viewModel.user.collectAsState()
+    
+    val reminderDisplay = savedReminderTime ?: "Chưa đặt"
+    
+    var isEditing by remember { mutableStateOf(false) }
+    var editName by remember(currentUser) { mutableStateOf(currentUser?.fullName ?: "") }
+    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
 
-		Card(
-			modifier = Modifier.fillMaxWidth(),
-			shape = RoundedCornerShape(24.dp),
-			colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.96f))
-		) {
-			Column(modifier = Modifier.padding(20.dp)) {
-				Text("UID: ${user?.uid ?: "N/A"}")
-				Text("Họ tên: ${user?.fullName ?: "N/A"}")
-				Text("Email: ${user?.email ?: "N/A"}")
-				Text("Provider: ${user?.provider ?: "N/A"}")
-				Text("Google user: ${user?.isGoogleUser ?: false}")
-			}
-		}
+    val imagePicker = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let { selectedImageUri = it }
+    }
 
-		Spacer(modifier = Modifier.height(16.dp))
+    val permissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (!isGranted) {
+            Toast.makeText(context, "Vui lòng cấp quyền thông báo", Toast.LENGTH_SHORT).show()
+        }
+    }
 
-		Card(
-			modifier = Modifier.fillMaxWidth(),
-			shape = RoundedCornerShape(24.dp),
-			colors = CardDefaults.cardColors(containerColor = Color(0xFF0F172A).copy(alpha = 0.9f))
-		) {
-			Column(modifier = Modifier.padding(20.dp)) {
-				Text("Trạng thái lưu trữ", color = Color.White, fontWeight = FontWeight.Bold)
-				Spacer(modifier = Modifier.height(8.dp))
-				Text(
-					text = "User đã được lưu local bằng Room + DataStore, đồng thời có hook sync sang server MongoDB.",
-					color = Color(0xFFDCE9F5)
-				)
-			}
-		}
+    LaunchedEffect(uiState) {
+        when (val state = uiState) {
+            is ProfileUiState.Success -> {
+                Toast.makeText(context, state.message, Toast.LENGTH_SHORT).show()
+                isEditing = false
+                selectedImageUri = null
+                viewModel.resetUiState()
+            }
+            is ProfileUiState.Error -> {
+                Toast.makeText(context, state.message, Toast.LENGTH_LONG).show()
+                viewModel.resetUiState()
+            }
+            else -> {}
+        }
+    }
 
-		Spacer(modifier = Modifier.height(16.dp))
+    fun scheduleNotification(hour: Int, minute: Int) {
+        val calendar = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, hour)
+            set(Calendar.MINUTE, minute)
+            set(Calendar.SECOND, 0)
+        }
+        val now = Calendar.getInstance()
+        if (calendar.before(now)) calendar.add(Calendar.DAY_OF_YEAR, 1)
+        val delay = calendar.timeInMillis - now.timeInMillis
+        
+        val workRequest = OneTimeWorkRequestBuilder<ReminderWorker>()
+            .setInitialDelay(delay, TimeUnit.MILLISECONDS)
+            .addTag("daily_reminder")
+            .build()
 
-		Button(onClick = onBack, modifier = Modifier.fillMaxWidth()) {
-			Text("Quay lại")
-		}
+        WorkManager.getInstance(context).enqueue(workRequest)
+        val timeString = String.format(Locale.getDefault(), "%02d:%02d", hour, minute)
+        viewModel.saveReminderTime(timeString)
+        Toast.makeText(context, "Đã đặt lịch nhắc học lúc $timeString", Toast.LENGTH_LONG).show()
+    }
 
-		Spacer(modifier = Modifier.height(10.dp))
+    TegramBackground(modifier = modifier) {
+        Spacer(modifier = Modifier.height(24.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            TegramSectionTitle(text = "Hồ sơ cá nhân")
+            if (!isEditing) {
+                IconButton(onClick = { isEditing = true }) {
+                    Icon(Icons.Default.Edit, contentDescription = "Sửa", tint = Color.White)
+                }
+            }
+        }
+        Spacer(modifier = Modifier.height(16.dp))
 
-		Button(onClick = onLogout, modifier = Modifier.fillMaxWidth()) {
-			Text("Đăng xuất")
-		}
-	}
+        TegramCard(isDark = false) {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(100.dp)
+                        .clip(CircleShape)
+                        .background(Color.LightGray)
+                        .clickable(enabled = isEditing) { imagePicker.launch("image/*") }
+                ) {
+                    AsyncImage(
+                        model = selectedImageUri ?: currentUser?.photoUrl,
+                        contentDescription = "Avatar",
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                    if (isEditing) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(Color.Black.copy(alpha = 0.3f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text("Đổi ảnh", color = Color.White, style = MaterialTheme.typography.labelSmall)
+                        }
+                    }
+                }
+                
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                if (isEditing) {
+                    TegramTextField(
+                        value = editName,
+                        onValueChange = { editName = it },
+                        label = "Họ tên",
+                        onDarkBackground = false
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        TegramButton(
+                            text = "Hủy",
+                            onClick = { 
+                                isEditing = false
+                                selectedImageUri = null
+                                editName = currentUser?.fullName ?: ""
+                            },
+                            isOutlined = true,
+                            onDarkBackground = false,
+                            modifier = Modifier.weight(1f)
+                        )
+                        TegramButton(
+                            text = if (uiState is ProfileUiState.Loading) "Đang lưu..." else "Lưu",
+                            onClick = { viewModel.updateProfile(editName, selectedImageUri) },
+                            enabled = uiState !is ProfileUiState.Loading,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                } else {
+                    Text(
+                        text = currentUser?.fullName ?: "N/A",
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(text = currentUser?.email ?: "N/A", color = Color.Gray)
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        TegramCard(isDark = true) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Default.Notifications, contentDescription = null, tint = Color.White)
+                Spacer(modifier = Modifier.width(12.dp))
+                Text("Cài đặt nhắc nhở", color = Color.White, fontWeight = FontWeight.Bold)
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(text = "Nhắc tôi học lúc: $reminderDisplay", color = Color(0xFFDCE9F5))
+            Spacer(modifier = Modifier.height(12.dp))
+            TegramButton(
+                text = "Chọn giờ nhắc học",
+                onClick = {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        permissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+                    }
+                    val calendar = Calendar.getInstance()
+                    TimePickerDialog(
+                        context,
+                        { _, h, m -> scheduleNotification(h, m) },
+                        calendar.get(Calendar.HOUR_OF_DAY),
+                        calendar.get(Calendar.MINUTE),
+                        true
+                    ).show()
+                }
+            )
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+        TegramButton(text = "Đăng xuất", onClick = onLogout, isOutlined = true)
+    }
 }

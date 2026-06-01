@@ -10,5 +10,10 @@ data class UserSyncRequest(
     val provider: String,
     val photoUrl: String?,
     val isGoogleUser: Boolean,
+    val streak: Int = 0,
+    val level: String = "A1",
+    val wordsLearned: Int = 0,
+    val totalReviews: Int = 0,
+    val correctReviews: Int = 0,
     val syncedAt: Long
 )

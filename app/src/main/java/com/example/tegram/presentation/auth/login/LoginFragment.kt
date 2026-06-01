@@ -51,8 +51,16 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
-import java.io.IOException
 import kotlinx.coroutines.launch
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Icon
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
+import com.example.tegram.presentation.common.components.TegramBackground
+import com.example.tegram.presentation.common.components.TegramButton
+import com.example.tegram.presentation.common.components.TegramCard
+import com.example.tegram.presentation.common.components.TegramTextField
 
 @Composable
 fun LoginScreen(
@@ -90,36 +98,21 @@ fun LoginScreen(
 					}
 				}
 			} catch (exception: Exception) {
-				context.toast(exception.toLoginErrorMessage("Đăng nhập Google thất bại"))
+				context.toast(exception.toGoogleSignInErrorMessage())
 			}
 		}
 	}
 
-	Box(
-		modifier = modifier
-			.fillMaxSize()
-			.background(
-				brush = Brush.verticalGradient(
-					colors = listOf(
-						Color(0xFF081120),
-						Color(0xFF123D66),
-						Color(0xFF2B8CC4)
-					)
-				)
-			)
-			.padding(20.dp)
-	) {
+	TegramBackground(modifier = modifier) {
 		Column(
-			modifier = Modifier
-				.fillMaxSize()
-				.verticalScroll(rememberScrollState()),
-			verticalArrangement = Arrangement.Center,
+			modifier = Modifier.fillMaxWidth(),
 			horizontalAlignment = Alignment.CenterHorizontally
 		) {
+			Spacer(modifier = Modifier.height(32.dp))
 			Image(
 				painter = painterResource(id = R.drawable.z7878269644177_8b565971c843444c8c970c8f12d4ade9),
 				contentDescription = "Tegram logo",
-				modifier = Modifier.size(170.dp)
+				modifier = Modifier.size(150.dp)
 			)
 
 			Spacer(modifier = Modifier.height(16.dp))
@@ -136,101 +129,88 @@ fun LoginScreen(
 				color = Color(0xFFDCE9F5)
 			)
 
-			Spacer(modifier = Modifier.height(24.dp))
+			Spacer(modifier = Modifier.height(32.dp))
 
-			Card(
-				modifier = Modifier.fillMaxWidth(),
-				shape = RoundedCornerShape(28.dp),
-				colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.97f)),
-				elevation = CardDefaults.cardElevation(defaultElevation = 10.dp)
-			) {
-				Column(modifier = Modifier.padding(20.dp)) {
-					Text(
-						text = "Đăng nhập",
-						style = MaterialTheme.typography.headlineSmall,
-						fontWeight = FontWeight.Bold,
-						color = Color(0xFF0F172A)
-					)
+			TegramCard(isDark = false) {
+				Text(
+					text = "Đăng nhập",
+					style = MaterialTheme.typography.headlineSmall,
+					fontWeight = FontWeight.Bold,
+					color = Color(0xFF0F172A)
+				)
 
-					Spacer(modifier = Modifier.height(16.dp))
+				Spacer(modifier = Modifier.height(24.dp))
 
-					OutlinedTextField(
-						value = email,
-						onValueChange = { email = it },
-						modifier = Modifier.fillMaxWidth(),
-						label = { Text("Email") },
-						singleLine = true
-					)
+				TegramTextField(
+					value = email,
+					onValueChange = { email = it },
+					label = "Email",
+					onDarkBackground = false
+				)
 
-					Spacer(modifier = Modifier.height(12.dp))
+				Spacer(modifier = Modifier.height(16.dp))
 
-					OutlinedTextField(
-						value = password,
-						onValueChange = { password = it },
-						modifier = Modifier.fillMaxWidth(),
-						label = { Text("Mật khẩu") },
-						singleLine = true,
-						visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation()
-					)
-
-					TextButton(
-						onClick = { isPasswordVisible = !isPasswordVisible },
-						modifier = Modifier.align(Alignment.End)
-					) {
-						Text(if (isPasswordVisible) "Ẩn mật khẩu" else "Hiện mật khẩu")
-					}
-
-					Button(
-						onClick = {
-							scope.launch {
-								runCatching { onLogin(email, password) }
-									.onSuccess {
-										context.toast("Đăng nhập thành công")
-										onAuthSuccess()
-									}
-									.onFailure { context.toast(it.toLoginErrorMessage("Đăng nhập thất bại")) }
-							}
-						},
-						modifier = Modifier.fillMaxWidth(),
-						contentPadding = PaddingValues(vertical = 14.dp),
-						shape = RoundedCornerShape(16.dp)
-					) {
-						Text("Đăng nhập bằng Email")
-					}
-
-					Spacer(modifier = Modifier.height(12.dp))
-
-					Button(
-						onClick = {
-							if (googleClient == null) {
-								context.toast("Thiếu cấu hình Google Sign-In")
-							} else {
-								// Clear cached Google session so users can choose account explicitly.
-								googleClient.signOut().addOnCompleteListener {
-									googleLauncher.launch(googleClient.signInIntent)
-								}
-							}
-						},
-						modifier = Modifier.fillMaxWidth(),
-						colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0F172A)),
-						contentPadding = PaddingValues(vertical = 14.dp),
-						shape = RoundedCornerShape(16.dp)
-					) {
-						Text("Tiếp tục với Google")
-					}
-
-					Spacer(modifier = Modifier.height(12.dp))
-
-					Row(
-						modifier = Modifier.fillMaxWidth(),
-						horizontalArrangement = Arrangement.Center,
-						verticalAlignment = Alignment.CenterVertically
-					) {
-						Text("Chưa có tài khoản?", color = Color(0xFF475569))
-						Spacer(modifier = Modifier.width(4.dp))
-						TextButton(onClick = onNavigateRegister) {
-							Text("Đăng ký ngay")
+				TegramTextField(
+					value = password,
+					onValueChange = { password = it },
+					label = "Mật khẩu",
+					onDarkBackground = false,
+					visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+					trailingIcon = {
+						IconButton(onClick = { isPasswordVisible = !isPasswordVisible }) {
+							Icon(
+								imageVector = if (isPasswordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+								contentDescription = if (isPasswordVisible) "Ẩn mật khẩu" else "Hiện mật khẩu",
+								tint = Color.Gray
+							)
 						}
+					}
+				)
+
+				Spacer(modifier = Modifier.height(24.dp))
+
+				TegramButton(
+					text = "Đăng nhập bằng Email",
+					onClick = {
+						scope.launch {
+							runCatching { onLogin(email, password) }
+								.onSuccess {
+									context.toast("Đăng nhập thành công")
+									onAuthSuccess()
+								}
+								.onFailure { context.toast(it.toLoginErrorMessage("Đăng nhập thất bại")) }
+						}
+					}
+				)
+
+				Spacer(modifier = Modifier.height(12.dp))
+
+				TegramButton(
+					text = "Tiếp tục với Google",
+					onClick = {
+						if (googleClient == null) {
+							context.toast("Thiếu cấu hình Google Sign-In")
+						} else {
+							googleClient.signOut().addOnCompleteListener {
+								googleLauncher.launch(googleClient.signInIntent)
+							}
+						}
+					},
+					isOutlined = true,
+					onDarkBackground = false
+				)
+
+				Spacer(modifier = Modifier.height(16.dp))
+
+				Row(
+					modifier = Modifier.fillMaxWidth(),
+					horizontalArrangement = Arrangement.Center,
+					verticalAlignment = Alignment.CenterVertically
+				) {
+					Text("Chưa có tài khoản?", color = Color(0xFF475569))
+					Spacer(modifier = Modifier.width(4.dp))
+					TextButton(onClick = onNavigateRegister) {
+						Text("Đăng ký ngay")
 					}
 				}
 			}
@@ -279,5 +259,20 @@ private fun Throwable.toLoginErrorMessage(defaultMessage: String): String {
 			errorText.contains("timeout") ->
 			"Không kết nối được tới backend. Hãy kiểm tra ExpressJS đang chạy ở port 3001."
 		else -> message?.takeIf { it.isNotBlank() } ?: defaultMessage
+	}
+}
+
+private fun Throwable.toGoogleSignInErrorMessage(): String {
+	val errorText = buildString {
+		append(message.orEmpty())
+		cause?.message?.let { append(' ').append(it) }
+	}.lowercase()
+
+	return when {
+		errorText.contains("network") ||
+			errorText.contains("connect") ||
+			errorText.contains("timeout") ->
+			"Không đăng nhập Google được vì emulator chưa có Internet. Hãy dùng Email hoặc kiểm tra mạng emulator."
+		else -> message?.takeIf { it.isNotBlank() } ?: "Đăng nhập Google thất bại"
 	}
 }

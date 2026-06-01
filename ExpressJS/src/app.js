@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
 const authRoutes = require('./routes/authRoutes');
+const learningRoutes = require('./routes/learningRoutes');
 const userRoutes = require('./routes/userRoutes');
 const vocabularyRoutes = require('./routes/vocabularyRoutes');
 const publicVocabularyRoutes = require('./routes/publicVocabularyRoutes');
@@ -26,6 +27,7 @@ app.use('/users', userRoutes);
 app.use('/api/vocabulary', vocabularyRoutes);
 app.use('/api/public-vocabulary', publicVocabularyRoutes);
 app.use('/api/dictionary', dictionaryRoutes);
+app.use('/learning', learningRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

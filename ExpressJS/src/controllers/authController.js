@@ -14,6 +14,11 @@ function serializeUser(user) {
     provider: user.provider,
     photoUrl: user.photoUrl,
     isGoogleUser: user.isGoogleUser,
+    streak: user.streak || 0,
+    level: user.level || 'A1',
+    wordsLearned: user.wordsLearned || 0,
+    totalReviews: user.totalReviews || 0,
+    correctReviews: user.correctReviews || 0,
     syncedAt: user.syncedAt,
   };
 }
