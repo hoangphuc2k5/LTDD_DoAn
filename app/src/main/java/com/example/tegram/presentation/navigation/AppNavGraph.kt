@@ -6,6 +6,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -17,21 +18,11 @@ import com.example.tegram.presentation.learning.LearningViewModel
 import com.example.tegram.presentation.learning.dailyplan.DailyPlanScreen
 import com.example.tegram.presentation.learning.flashcard.FlashcardScreen
 import com.example.tegram.presentation.learning.review.SrsReviewScreen
-import com.example.tegram.presentation.profile.ProfileScreen
-import com.example.tegram.presentation.vocabulary.VocabularyHomeScreen
-import com.example.tegram.presentation.vocabulary.importexport.ImportExportRoute
-import com.example.tegram.presentation.statistics.StatisticsScreen
 import kotlinx.coroutines.launch
-import androidx.compose.runtime.LaunchedEffect
 
 private object Routes {
 	const val Login = "login"
 	const val Register = "register"
-	const val Home = "home"
-	const val Vocabulary = "vocabulary"
-	const val Profile = "profile"
-	const val ImportExport = "import_export"
-	const val Statistics = "statistics"
 	const val Main = "main"
 	const val Flashcards = "flashcards"
 	const val Review = "review"
@@ -62,7 +53,7 @@ fun AppNavGraph(
 				onGoogleLogin = { fullName, email, photoUrl -> authViewModel.loginWithGoogle(fullName, email, photoUrl) },
 				onAuthSuccess = {
 					navController.navigate(Routes.Main) {
-						popUpTo(Routes.Login)
+						popUpTo(Routes.Login) { inclusive = true }
 						launchSingleTop = true
 					}
 				},
@@ -81,55 +72,26 @@ fun AppNavGraph(
 			)
 		}
 
-		composable(Routes.Home) {
-			HomeScreen(
-				onOpenProfile = { navController.navigate(Routes.Profile) },
-				onOpenVocabulary = { navController.navigate(Routes.Vocabulary) },
-				onOpenStatistics = { navController.navigate(Routes.Statistics) },
 		composable(Routes.Main) {
-			MainScreen(
+			HomeScreen(
 				user = currentUser,
 				dailyPlan = learningState.dailyPlan,
-				onNavigateToFlashcards = { navController.navigate(Routes.Flashcards) },
-				onNavigateToReview = { navController.navigate(Routes.Review) },
-				onNavigateToDailyPlan = { navController.navigate(Routes.DailyPlan) },
+				onOpenProfile = { navController.navigate(Routes.DailyPlan) },
+				onOpenFlashcards = { navController.navigate(Routes.Flashcards) },
+				onOpenReview = { navController.navigate(Routes.Review) },
+				onOpenDailyPlan = { navController.navigate(Routes.DailyPlan) },
 				onLogout = {
 					coroutineScope.launch {
 						authViewModel.logout()
 						navController.navigate(Routes.Login) {
 							popUpTo(Routes.Main) { inclusive = true }
+							launchSingleTop = true
 						}
 					}
 				}
 			)
 		}
 
-		composable(Routes.Vocabulary) {
-			if (currentUser == null) {
-				LaunchedEffect(Unit) {
-					navController.navigate(Routes.Login) {
-						popUpTo(Routes.Login)
-						launchSingleTop = true
-					}
-				}
-			} else {
-				VocabularyHomeScreen(
-					onNavigateToAdd = {},
-					onNavigateToDetail = {},
-					onNavigateToImportExport = { navController.navigate(Routes.ImportExport) }
-				)
-			}
-		}
-
-		composable(Routes.ImportExport) {
-			ImportExportRoute(
-				onNavigateBack = { navController.popBackStack() }
-			)
-		}
-
-		composable(Routes.Profile) {
-			ProfileScreen(
-				user = currentUser,
 		composable(Routes.Flashcards) {
 			FlashcardScreen(
 				cards = learningState.cards,
@@ -169,12 +131,6 @@ fun AppNavGraph(
 				onBack = { navController.popBackStack() },
 				onStartFlashcards = { navController.navigate(Routes.Flashcards) },
 				onStartReview = { navController.navigate(Routes.Review) }
-			)
-		}
-
-		composable(Routes.Statistics) {
-			StatisticsScreen(
-				onBack = { navController.popBackStack() }
 			)
 		}
 	}

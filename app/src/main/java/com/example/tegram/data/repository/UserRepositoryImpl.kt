@@ -101,7 +101,7 @@ class UserRepositoryImpl(
 			error(response.message ?: "Cập nhật hồ sơ thất bại")
 		}
 
-		return persistSession(response.user.toDomain())
+		return persistSession(response.user.toDomain(), response.token)
 	}
 
 	override suspend fun logout() {
@@ -109,13 +109,6 @@ class UserRepositoryImpl(
 		userPreferencesDataStore.clearCurrentUser()
 	}
 
-	private suspend fun persistSession(profile: UserProfile, token: String?): UserProfile {
-		withContext(Dispatchers.IO) {
-			userDao.upsert(profile.toEntity())
-			userPreferencesDataStore.saveCurrentUser(profile)
-			if (!token.isNullOrBlank()) {
-				userPreferencesDataStore.saveAuthToken(token)
-			}
 	override suspend fun updateUserProgress(
 		streak: Int,
 		level: String,
@@ -123,8 +116,10 @@ class UserRepositoryImpl(
 		totalReviews: Int,
 		correctReviews: Int
 	): UserProfile {
-		val uid = userPreferencesDataStore.currentUserIdFlow.first() ?: error("Người dùng chưa đăng nhập")
-		val existing = userDao.observeById(uid).first() ?: error("Không tìm thấy người dùng trong CSDL")
+		val uid = userPreferencesDataStore.currentUserIdFlow.first()
+			?: error("Người dùng chưa đăng nhập")
+		val existing = userDao.observeById(uid).first()
+			?: error("Không tìm thấy người dùng trong CSDL")
 
 		val updatedProfile = existing.toDomain().copy(
 			streak = streak,
@@ -135,26 +130,25 @@ class UserRepositoryImpl(
 			syncedAt = System.currentTimeMillis()
 		)
 
-		// 1. Lưu local
 		persistSession(updatedProfile)
 
-		// 2. Đồng bộ server (không để lỗi network chặn trải nghiệm người dùng)
-		runCatching {
+		return runCatching {
 			val response = userApiService.syncUser(updatedProfile.toSyncRequest())
 			if (response.success && response.user != null) {
-				persistSession(response.user.toDomain())
+				persistSession(response.user.toDomain(), response.token)
+			} else {
+				updatedProfile
 			}
+		}.getOrElse {
+			updatedProfile
 		}
-
-		return updatedProfile
 	}
 
-	private suspend fun persistSession(profile: UserProfile): UserProfile {
 	private suspend fun persistSession(profile: UserProfile, token: String? = null): UserProfile {
 		withContext(Dispatchers.IO) {
 			userDao.upsert(profile.toEntity())
 			userPreferencesDataStore.saveCurrentUser(profile)
-			token?.let { userPreferencesDataStore.saveAuthToken(it) }
+			token?.takeIf { it.isNotBlank() }?.let { userPreferencesDataStore.saveAuthToken(it) }
 		}
 		return profile
 	}

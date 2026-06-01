@@ -1,27 +1,25 @@
 package com.example.tegram.presentation.auth.register
 
 import android.content.Context
-import androidx.compose.foundation.background
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -32,7 +30,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -41,17 +38,11 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.example.tegram.R
-import kotlinx.coroutines.launch
-
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Icon
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VisibilityOff
 import com.example.tegram.presentation.common.components.TegramBackground
 import com.example.tegram.presentation.common.components.TegramButton
 import com.example.tegram.presentation.common.components.TegramCard
 import com.example.tegram.presentation.common.components.TegramTextField
+import kotlinx.coroutines.launch
 
 @Composable
 fun RegisterScreen(
@@ -69,16 +60,20 @@ fun RegisterScreen(
 
 	TegramBackground(modifier = modifier) {
 		Column(
-			modifier = Modifier.fillMaxWidth(),
+			modifier = Modifier
+				.fillMaxWidth()
+				.verticalScroll(rememberScrollState()),
 			horizontalAlignment = Alignment.CenterHorizontally
 		) {
-			androidx.compose.foundation.Image(
+			Spacer(modifier = Modifier.height(24.dp))
+
+			Image(
 				painter = painterResource(id = R.drawable.z7878269644177_8b565971c843444c8c970c8f12d4ade9),
 				contentDescription = "Tegram logo",
-				modifier = Modifier.size(130.dp)
+				modifier = Modifier.size(140.dp)
 			)
 
-			Spacer(modifier = Modifier.height(12.dp))
+			Spacer(modifier = Modifier.height(16.dp))
 
 			Text(
 				text = "Tạo tài khoản",
@@ -92,7 +87,7 @@ fun RegisterScreen(
 				color = Color(0xFFDCE9F5)
 			)
 
-			Spacer(modifier = Modifier.height(24.dp))
+			Spacer(modifier = Modifier.height(28.dp))
 
 			TegramCard(isDark = false) {
 				Text(
@@ -120,26 +115,6 @@ fun RegisterScreen(
 					onDarkBackground = false
 				)
 
-					Button(
-						onClick = {
-							if (password != confirmPassword) {
-								context.toast("Mật khẩu xác nhận không khớp")
-								return@Button
-							}
-							scope.launch {
-								runCatching { onRegister(fullName, email, password) }
-									.onSuccess {
-										context.toast("Đăng ký thành công")
-										onNavigateLogin()
-									}
-									.onFailure { context.toast(it.toRegisterErrorMessage("Đăng ký thất bại")) }
-							}
-						},
-						modifier = Modifier.fillMaxWidth(),
-						contentPadding = PaddingValues(vertical = 14.dp),
-						shape = RoundedCornerShape(16.dp)
-					) {
-						Text("Tạo tài khoản")
 				Spacer(modifier = Modifier.height(16.dp))
 
 				TegramTextField(
@@ -147,7 +122,16 @@ fun RegisterScreen(
 					onValueChange = { password = it },
 					label = "Mật khẩu",
 					onDarkBackground = false,
-					visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation()
+					visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+					trailingIcon = {
+						IconButton(onClick = { isPasswordVisible = !isPasswordVisible }) {
+							Icon(
+								imageVector = if (isPasswordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+								contentDescription = if (isPasswordVisible) "Ẩn mật khẩu" else "Hiện mật khẩu",
+								tint = Color.Gray
+							)
+						}
+					}
 				)
 
 				Spacer(modifier = Modifier.height(16.dp))
@@ -178,13 +162,14 @@ fun RegisterScreen(
 							context.toast("Mật khẩu xác nhận không khớp")
 							return@TegramButton
 						}
+
 						scope.launch {
 							runCatching { onRegister(fullName, email, password) }
 								.onSuccess {
 									context.toast("Đăng ký thành công")
 									onNavigateLogin()
 								}
-								.onFailure { context.toast(it.message ?: "Đăng ký thất bại") }
+								.onFailure { context.toast(it.toRegisterErrorMessage("Đăng ký thất bại")) }
 						}
 					}
 				)

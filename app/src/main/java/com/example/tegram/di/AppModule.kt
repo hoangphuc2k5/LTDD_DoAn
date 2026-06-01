@@ -6,29 +6,26 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.room.Room
 import com.example.tegram.R
-import com.example.tegram.data.local.dao.UserDao
 import com.example.tegram.data.local.dao.DailyProgressDao
+import com.example.tegram.data.local.dao.UserDao
 import com.example.tegram.data.local.database.TegramDatabase
 import com.example.tegram.data.local.datastore.UserPreferencesDataStore
 import com.example.tegram.data.remote.api.LearningApiService
 import com.example.tegram.data.remote.api.UserApiService
 import com.example.tegram.data.remote.api.VocabularyApiService
-import com.example.tegram.data.repository.UserRepositoryImpl
-import com.example.tegram.data.repository.VocabularyRepositoryImpl
-import com.example.tegram.domain.repository.UserRepository
-import com.example.tegram.domain.repository.VocabularyRepository
-import com.example.tegram.data.remote.interceptor.AuthInterceptor
 import com.example.tegram.data.repository.LearningRepositoryImpl
 import com.example.tegram.data.repository.UserRepositoryImpl
+import com.example.tegram.data.repository.VocabularyRepositoryImpl
 import com.example.tegram.domain.repository.LearningRepository
 import com.example.tegram.domain.repository.UserRepository
+import com.example.tegram.domain.repository.VocabularyRepository
 import com.example.tegram.domain.usecase.learning.GetDailyPlanUseCase
 import com.google.firebase.auth.FirebaseAuth
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.components.SingletonComponent
 import dagger.hilt.android.qualifiers.ApplicationContext
+import dagger.hilt.components.SingletonComponent
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import javax.inject.Singleton
@@ -84,9 +81,6 @@ object AppModule {
     fun provideOkHttpClient(userPreferencesDataStore: UserPreferencesDataStore): OkHttpClient = 
         OkHttpClient.Builder()
             .addInterceptor(TokenInterceptor(userPreferencesDataStore))
-    fun provideOkHttpClient(authInterceptor: AuthInterceptor): OkHttpClient = 
-        OkHttpClient.Builder()
-            .addInterceptor(authInterceptor)
             .build()
 
     @Provides
@@ -111,6 +105,9 @@ object AppModule {
     @Singleton
     fun provideVocabularyApiService(retrofit: Retrofit): com.example.tegram.data.remote.api.VocabularyApiService =
         retrofit.create(com.example.tegram.data.remote.api.VocabularyApiService::class.java)
+
+    @Provides
+    @Singleton
     fun provideLearningApiService(retrofit: Retrofit): LearningApiService =
         retrofit.create(LearningApiService::class.java)
 
@@ -137,6 +134,9 @@ object AppModule {
     fun provideVocabularyRepository(
         apiService: VocabularyApiService
     ): VocabularyRepository = VocabularyRepositoryImpl(apiService)
+
+    @Provides
+    @Singleton
     fun provideLearningRepository(
         learningApiService: LearningApiService,
         getDailyPlanUseCase: GetDailyPlanUseCase

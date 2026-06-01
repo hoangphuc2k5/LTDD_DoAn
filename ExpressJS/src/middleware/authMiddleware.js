@@ -29,9 +29,6 @@ const protect = async (req, res, next) => {
   }
 };
 
-module.exports = { protect };
-const jwt = require("jsonwebtoken");
-
 function authenticateUser(req, res, next) {
   try {
     const authHeader = req.headers.authorization;
@@ -71,4 +68,4 @@ function authenticateUser(req, res, next) {
   }
 }
 
-module.exports = { authenticateUser };
+module.exports = { protect, authenticateUser };

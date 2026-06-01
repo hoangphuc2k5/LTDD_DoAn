@@ -38,8 +38,6 @@ async function syncUser(req, res) {
     correctReviews,
     syncedAt
   } = req.body || {};
-  const { uid, fullName, email, provider, photoUrl, isGoogleUser, syncedAt } =
-    req.body || {};
   const normalizedEmail = normalizeEmail(email);
 
   if (!uid || !fullName || !normalizedEmail || !provider) {
@@ -53,20 +51,6 @@ async function syncUser(req, res) {
     $or: [{ uid: String(uid).trim() }, { email: normalizedEmail }],
   });
 
-  const user = existing || new User({
-    uid: String(uid).trim(),
-    fullName: String(fullName).trim(),
-    email: normalizedEmail,
-    provider: String(provider).trim(),
-    photoUrl: photoUrl || null,
-    isGoogleUser: Boolean(isGoogleUser),
-    streak: typeof streak === 'number' ? streak : 0,
-    level: level || 'A1',
-    wordsLearned: typeof wordsLearned === 'number' ? wordsLearned : 0,
-    totalReviews: typeof totalReviews === 'number' ? totalReviews : 0,
-    correctReviews: typeof correctReviews === 'number' ? correctReviews : 0,
-    syncedAt: typeof syncedAt === 'number' ? syncedAt : Date.now(),
-  });
   const user =
     existing ||
     new User({
@@ -76,6 +60,11 @@ async function syncUser(req, res) {
       provider: String(provider).trim(),
       photoUrl: photoUrl || null,
       isGoogleUser: Boolean(isGoogleUser),
+      streak: typeof streak === 'number' ? streak : 0,
+      level: level || 'A1',
+      wordsLearned: typeof wordsLearned === 'number' ? wordsLearned : 0,
+      totalReviews: typeof totalReviews === 'number' ? totalReviews : 0,
+      correctReviews: typeof correctReviews === 'number' ? correctReviews : 0,
       syncedAt: typeof syncedAt === "number" ? syncedAt : Date.now(),
     });
 
