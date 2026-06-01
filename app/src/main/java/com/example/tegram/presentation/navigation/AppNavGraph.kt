@@ -23,8 +23,7 @@ import kotlinx.coroutines.launch
 private object Routes {
 	const val Login = "login"
 	const val Register = "register"
-	const val Home = "home"
-	const val Profile = "profile"
+	const val Main = "main"
 	const val Flashcards = "flashcards"
 	const val Review = "review"
 	const val DailyPlan = "dailyPlan"
@@ -53,7 +52,7 @@ fun AppNavGraph(
 				onLogin = { email, password -> authViewModel.loginWithEmail(email, password) },
 				onGoogleLogin = { fullName, email, photoUrl -> authViewModel.loginWithGoogle(fullName, email, photoUrl) },
 				onAuthSuccess = {
-					navController.navigate(Routes.Home) {
+					navController.navigate(Routes.Main) {
 						popUpTo(Routes.Login)
 						launchSingleTop = true
 					}
@@ -73,20 +72,18 @@ fun AppNavGraph(
 			)
 		}
 
-		composable(Routes.Home) {
-			HomeScreen(
+		composable(Routes.Main) {
+			MainScreen(
 				user = currentUser,
 				dailyPlan = learningState.dailyPlan,
-				onOpenProfile = { navController.navigate(Routes.Profile) },
-				onOpenFlashcards = { navController.navigate(Routes.Flashcards) },
-				onOpenReview = { navController.navigate(Routes.Review) },
-				onOpenDailyPlan = { navController.navigate(Routes.DailyPlan) },
+				onNavigateToFlashcards = { navController.navigate(Routes.Flashcards) },
+				onNavigateToReview = { navController.navigate(Routes.Review) },
+				onNavigateToDailyPlan = { navController.navigate(Routes.DailyPlan) },
 				onLogout = {
 					coroutineScope.launch {
 						authViewModel.logout()
 						navController.navigate(Routes.Login) {
-							popUpTo(Routes.Home)
-							launchSingleTop = true
+							popUpTo(Routes.Main) { inclusive = true }
 						}
 					}
 				}
@@ -132,22 +129,6 @@ fun AppNavGraph(
 				onBack = { navController.popBackStack() },
 				onStartFlashcards = { navController.navigate(Routes.Flashcards) },
 				onStartReview = { navController.navigate(Routes.Review) }
-			)
-		}
-
-		composable(Routes.Profile) {
-			ProfileScreen(
-				user = currentUser,
-				onBack = { navController.popBackStack() },
-				onLogout = {
-					coroutineScope.launch {
-						authViewModel.logout()
-						navController.navigate(Routes.Login) {
-							popUpTo(Routes.Home)
-							launchSingleTop = true
-						}
-					}
-				}
 			)
 		}
 	}

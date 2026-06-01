@@ -6,25 +6,17 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -32,6 +24,9 @@ import androidx.compose.ui.unit.dp
 import com.example.tegram.R
 import com.example.tegram.domain.model.UserProfile
 import com.example.tegram.domain.model.learning.DailyPlan
+import com.example.tegram.presentation.common.components.TegramBackground
+import com.example.tegram.presentation.common.components.TegramButton
+import com.example.tegram.presentation.common.components.TegramCard
 
 @Composable
 fun HomeScreen(
@@ -44,18 +39,7 @@ fun HomeScreen(
 	onLogout: () -> Unit,
 	modifier: Modifier = Modifier
 ) {
-	Column(
-		modifier = modifier
-			.fillMaxSize()
-			.background(
-				brush = Brush.verticalGradient(
-					colors = listOf(Color(0xFF07111F), Color(0xFF123D66), Color(0xFF2B8CC4))
-				)
-			)
-			.verticalScroll(rememberScrollState())
-			.padding(20.dp),
-		verticalArrangement = Arrangement.Top
-	) {
+	TegramBackground(modifier = modifier) {
 		Spacer(modifier = Modifier.height(16.dp))
 		Row(verticalAlignment = Alignment.CenterVertically) {
 			Image(
@@ -77,86 +61,62 @@ fun HomeScreen(
 
 		Spacer(modifier = Modifier.height(20.dp))
 
-		Card(
-			modifier = Modifier.fillMaxWidth(),
-			shape = RoundedCornerShape(24.dp),
-			colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.96f))
-		) {
-			Column(modifier = Modifier.padding(20.dp)) {
-				Text("Kế hoạch học hôm nay", fontWeight = FontWeight.Bold, color = Color(0xFF0F172A))
-				Spacer(modifier = Modifier.height(12.dp))
-				Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-					PlanMetric("Đến hạn", dailyPlan.dueCards.toString(), Modifier.weight(1f))
-					PlanMetric("Thẻ mới", dailyPlan.newCards.toString(), Modifier.weight(1f))
-				}
-				Spacer(modifier = Modifier.height(10.dp))
-				Text(
-					text = "Dự kiến ${dailyPlan.estimatedMinutes} phút học tập.",
-					color = Color(0xFF475569)
-				)
-				Spacer(modifier = Modifier.height(14.dp))
-				Button(
-					onClick = onOpenReview,
-					modifier = Modifier.fillMaxWidth(),
-					enabled = dailyPlan.dueCards > 0
-				) {
-					Text("Ôn tập SRS")
-				}
-				Spacer(modifier = Modifier.height(10.dp))
-				OutlinedButton(onClick = onOpenDailyPlan, modifier = Modifier.fillMaxWidth()) {
-					Text("Xem Daily Plan")
-				}
+		TegramCard(isDark = false) {
+			Text("Kế hoạch học hôm nay", fontWeight = FontWeight.Bold, color = Color(0xFF0F172A))
+			Spacer(modifier = Modifier.height(12.dp))
+			Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+				PlanMetric("Đến hạn", dailyPlan.dueCards.toString(), Modifier.weight(1f))
+				PlanMetric("Thẻ mới", dailyPlan.newCards.toString(), Modifier.weight(1f))
 			}
+			Spacer(modifier = Modifier.height(10.dp))
+			Text(
+				text = "Dự kiến ${dailyPlan.estimatedMinutes} phút học tập.",
+				color = Color(0xFF475569)
+			)
+			Spacer(modifier = Modifier.height(14.dp))
+			TegramButton(
+				text = "Ôn tập SRS",
+				onClick = onOpenReview,
+				enabled = dailyPlan.dueCards > 0
+			)
+			Spacer(modifier = Modifier.height(10.dp))
+			TegramButton(
+				text = "Xem Daily Plan",
+				onClick = onOpenDailyPlan,
+				isOutlined = true
+			)
 		}
 
 		Spacer(modifier = Modifier.height(16.dp))
 
-		Card(
-			modifier = Modifier.fillMaxWidth(),
-			shape = RoundedCornerShape(24.dp),
-			colors = CardDefaults.cardColors(containerColor = Color(0xFF0F172A).copy(alpha = 0.9f))
-		) {
-			Column(modifier = Modifier.padding(20.dp)) {
-				Text("Flashcard & SRS", color = Color.White, fontWeight = FontWeight.Bold)
-				Spacer(modifier = Modifier.height(8.dp))
-				Text(
-					text = "Lật thẻ để tự kiểm tra trước, sau đó dùng SM-2 để lên lịch ôn tiếp theo.",
-					color = Color(0xFFDCE9F5)
-				)
-				Spacer(modifier = Modifier.height(14.dp))
-				Button(onClick = onOpenFlashcards, modifier = Modifier.fillMaxWidth()) {
-					Text("Học Flashcard")
-				}
-			}
+		TegramCard(isDark = true) {
+			Text("Flashcard & SRS", color = Color.White, fontWeight = FontWeight.Bold)
+			Spacer(modifier = Modifier.height(8.dp))
+			Text(
+				text = "Lật thẻ để tự kiểm tra trước, sau đó dùng SM-2 để lên lịch ôn tiếp theo.",
+				color = Color(0xFFDCE9F5)
+			)
+			Spacer(modifier = Modifier.height(14.dp))
+			TegramButton(text = "Học Flashcard", onClick = onOpenFlashcards)
 		}
 
 		Spacer(modifier = Modifier.height(16.dp))
 
-		Card(
-			modifier = Modifier.fillMaxWidth(),
-			shape = RoundedCornerShape(24.dp),
-			colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.96f))
-		) {
-			Column(modifier = Modifier.padding(20.dp)) {
-				Text("Thông tin tài khoản", fontWeight = FontWeight.Bold, color = Color(0xFF0F172A))
-				Spacer(modifier = Modifier.height(10.dp))
-				Text("Email: ${user?.email ?: "Chưa xác định"}")
-				Text("Nguồn đăng nhập: ${user?.provider ?: "Local"}")
-				Text("Đồng bộ lúc: ${user?.syncedAt ?: 0L}")
-			}
+		TegramCard(isDark = false) {
+			Text("Thông tin tài khoản", fontWeight = FontWeight.Bold, color = Color(0xFF0F172A))
+			Spacer(modifier = Modifier.height(10.dp))
+			Text("Email: ${user?.email ?: "Chưa xác định"}")
+			Text("Nguồn đăng nhập: ${user?.provider ?: "Local"}")
+			Text("Đồng bộ lúc: ${user?.syncedAt ?: 0L}")
 		}
 
 		Spacer(modifier = Modifier.height(16.dp))
 
-		Button(onClick = onOpenProfile, modifier = Modifier.fillMaxWidth()) {
-			Text("Xem hồ sơ")
-		}
+		TegramButton(text = "Xem hồ sơ", onClick = onOpenProfile)
 
 		Spacer(modifier = Modifier.height(10.dp))
 
-		OutlinedButton(onClick = onLogout, modifier = Modifier.fillMaxWidth()) {
-			Text("Đăng xuất")
-		}
+		TegramButton(text = "Đăng xuất", onClick = onLogout, isOutlined = true)
 	}
 }
 

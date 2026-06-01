@@ -59,6 +59,7 @@ dependencies {
     // ── Compose BOM (manages all Compose library versions) ──
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.compose.material.icons.extended)
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
@@ -94,6 +95,7 @@ dependencies {
     // ── Firebase (versions managed by BOM) ──
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth.ktx)         // Email + Google Sign-In
+    implementation(libs.firebase.storage.ktx)      // Profile image upload
     implementation(libs.firebase.messaging.ktx)    // FCM push notifications
 
     // ── Kotlin Coroutines ──
@@ -107,8 +109,14 @@ dependencies {
     // ── Jetpack Navigation Component (Compose) ──
     implementation(libs.androidx.navigation.compose)
 
+    // ── WorkManager ──
+    implementation(libs.androidx.work.runtime.ktx)
+
     // ── DataStore Preferences ──
     implementation(libs.androidx.datastore.preferences)
+
+    // ── Coil — Image Loading ──
+    implementation(libs.coil.compose)
 
     // ── Google Play Services — Auth (Google Sign-In) ──
     implementation(libs.play.services.auth)
