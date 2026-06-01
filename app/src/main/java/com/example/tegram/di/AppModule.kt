@@ -7,6 +7,7 @@ import androidx.datastore.preferences.preferencesDataStore
 import androidx.room.Room
 import com.example.tegram.R
 import com.example.tegram.data.local.dao.UserDao
+import com.example.tegram.data.local.dao.DailyProgressDao
 import com.example.tegram.data.local.database.TegramDatabase
 import com.example.tegram.data.local.datastore.UserPreferencesDataStore
 import com.example.tegram.data.remote.api.LearningApiService
@@ -58,6 +59,9 @@ object AppModule {
 
     @Provides
     fun provideUserDao(database: TegramDatabase): UserDao = database.userDao()
+
+    @Provides
+    fun provideDailyProgressDao(database: TegramDatabase): DailyProgressDao = database.dailyProgressDao()
 
     @Provides
     @Singleton

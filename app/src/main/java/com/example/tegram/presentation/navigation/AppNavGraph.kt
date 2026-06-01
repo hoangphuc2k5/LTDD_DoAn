@@ -18,11 +18,15 @@ import com.example.tegram.presentation.learning.dailyplan.DailyPlanScreen
 import com.example.tegram.presentation.learning.flashcard.FlashcardScreen
 import com.example.tegram.presentation.learning.review.SrsReviewScreen
 import com.example.tegram.presentation.profile.ProfileScreen
+import com.example.tegram.presentation.statistics.StatisticsScreen
 import kotlinx.coroutines.launch
 
 private object Routes {
 	const val Login = "login"
 	const val Register = "register"
+	const val Home = "home"
+	const val Profile = "profile"
+	const val Statistics = "statistics"
 	const val Main = "main"
 	const val Flashcards = "flashcards"
 	const val Review = "review"
@@ -72,6 +76,10 @@ fun AppNavGraph(
 			)
 		}
 
+		composable(Routes.Home) {
+			HomeScreen(
+				onOpenProfile = { navController.navigate(Routes.Profile) },
+				onOpenStatistics = { navController.navigate(Routes.Statistics) },
 		composable(Routes.Main) {
 			MainScreen(
 				user = currentUser,
@@ -129,6 +137,12 @@ fun AppNavGraph(
 				onBack = { navController.popBackStack() },
 				onStartFlashcards = { navController.navigate(Routes.Flashcards) },
 				onStartReview = { navController.navigate(Routes.Review) }
+			)
+		}
+
+		composable(Routes.Statistics) {
+			StatisticsScreen(
+				onBack = { navController.popBackStack() }
 			)
 		}
 	}

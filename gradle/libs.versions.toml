@@ -17,7 +17,7 @@ hilt = "2.59.2"
 hiltNavigationCompose = "1.2.0"
 
 # Local Database — Room
-room = "2.6.1"
+room = "2.8.4"
 
 # Networking — Retrofit2 + OkHttp3 + Moshi
 retrofit = "2.9.0"

@@ -109,6 +109,40 @@ class UserRepositoryImpl(
 		userPreferencesDataStore.clearCurrentUser()
 	}
 
+	override suspend fun updateUserProgress(
+		streak: Int,
+		level: String,
+		wordsLearned: Int,
+		totalReviews: Int,
+		correctReviews: Int
+	): UserProfile {
+		val uid = userPreferencesDataStore.currentUserIdFlow.first() ?: error("Người dùng chưa đăng nhập")
+		val existing = userDao.observeById(uid).first() ?: error("Không tìm thấy người dùng trong CSDL")
+
+		val updatedProfile = existing.toDomain().copy(
+			streak = streak,
+			level = level,
+			wordsLearned = wordsLearned,
+			totalReviews = totalReviews,
+			correctReviews = correctReviews,
+			syncedAt = System.currentTimeMillis()
+		)
+
+		// 1. Lưu local
+		persistSession(updatedProfile)
+
+		// 2. Đồng bộ server (không để lỗi network chặn trải nghiệm người dùng)
+		runCatching {
+			val response = userApiService.syncUser(updatedProfile.toSyncRequest())
+			if (response.success && response.user != null) {
+				persistSession(response.user.toDomain())
+			}
+		}
+
+		return updatedProfile
+	}
+
+	private suspend fun persistSession(profile: UserProfile): UserProfile {
 	private suspend fun persistSession(profile: UserProfile, token: String? = null): UserProfile {
 		withContext(Dispatchers.IO) {
 			userDao.upsert(profile.toEntity())
